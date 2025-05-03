@@ -1,4 +1,4 @@
-name: CI/CD {{SERVICE_NAME}} service pipeline
+name: CI/CD supplier service pipeline
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   check_folder_changed:
-    name: Check if {{SERVICE_NAME}} service folder changed
+    name: Check if supplier service folder changed
     runs-on: ubuntu-latest
     outputs:
       is_changed: ${{ steps.changes.outputs.service }}
@@ -19,20 +19,20 @@ jobs:
         with:
           filters: |
             service:
-              - 'services/{{SERVICE_NAME}}/**'
+              - 'services/supplier/**'
 
       # run only if "service" folder was changed
-      - name: "{{SERVICE_NAME}} service is changed"
+      - name: "supplier service is changed"
         if: steps.changes.outputs.service == 'true'
-        run: echo "Folder {{SERVICE_NAME}} in services has changed"
+        run: echo "Folder supplier in services has changed"
 
       # run only if "service" folder was not changed
-      - name: "{{SERVICE_NAME}} service is not changed"
+      - name: "supplier service is not changed"
         if: steps.changes.outputs.service == 'false'
-        run: echo "Folder {{SERVICE_NAME}} in services has not changed"
+        run: echo "Folder supplier in services has not changed"
 
   build_and_push:
-    name: Build and Push {{SERVICE_NAME}} Service Docker Image
+    name: Build and Push supplier Service Docker Image
     runs-on: ubuntu-latest
     needs: [check_folder_changed]
     if: needs.check_folder_changed.outputs.is_changed == 'true'
@@ -53,11 +53,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          cd services/{{SERVICE_NAME}}/
-          docker build --build-arg SERVICE_NAME={{SERVICE_NAME}} --build-arg APP_VERSION=${{ github.sha }} --build-arg ENV=production -t ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-{{SERVICE_NAME}}-service:latest -f Dockerfile.prod .
+          cd services/supplier/
+          docker build --build-arg SERVICE_NAME=supplier --build-arg APP_VERSION=${{ github.sha }} --build-arg ENV=production -t ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-supplier-service:latest -f Dockerfile.prod .
 
       - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-{{SERVICE_NAME}}-service:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-supplier-service:latest
 
   pull_and_run_on_droplet:
     needs: [build_and_push]
@@ -77,5 +77,5 @@ jobs:
 
       - name: Pull and run Docker images on Droplet
         run: |
-          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker pull ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-{{SERVICE_NAME}}-service:latest'
-          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker service update --force services_{{SERVICE_NAME}}'
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker pull ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-supplier-service:latest'
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker service update --force services_supplier'
