@@ -1,3 +1,4 @@
 fastapi[standard]==0.115.12
 pydantic==2.11.4
-psycopg2-binary==2.9.3
+psycopg2-binary==2.9.10
+uvicorn==0.22.0

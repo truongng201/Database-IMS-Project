@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  product:
+    build:
+      context: ./product
+      dockerfile: Dockerfile
+    volumes:
+      - ./product:/usr/src/app
+    ports:
+      - "8001:8000"
+
+  supplier:
+    build:
+      context: ./supplier
+      dockerfile: Dockerfile
+    volumes:
+      - ./supplier:/usr/src/app
+    ports:
+      - "8002:8000"
+
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    volumes:
+      - ./auth:/usr/src/app
+    ports:
+      - "8003:8000"
+
+  order:
+    build:
+      context: ./order
+      dockerfile: Dockerfile
+    volumes:
+      - ./order:/usr/src/app
+    ports:
+      - "8004:8000"
