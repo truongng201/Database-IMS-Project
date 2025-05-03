@@ -3,36 +3,98 @@ version: "3.9"
 services:
   product:
     build:
-      context: ./product
-      dockerfile: Dockerfile
+      context: ./shared
+      dockerfile: Dockerfile.dev
+    restart: always
+    environment:
+      - ENV=development
+      - SERVICE_NAME=product
     volumes:
       - ./product:/usr/src/app
+    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     ports:
       - "8001:8000"
 
   supplier:
     build:
-      context: ./supplier
-      dockerfile: Dockerfile
+      context: ./shared
+      dockerfile: Dockerfile.dev
+    restart: always
+    environment:
+      - ENV=development
+      - SERVICE_NAME=supplier
     volumes:
       - ./supplier:/usr/src/app
+    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     ports:
       - "8002:8000"
 
-  auth:
+  user:
     build:
-      context: ./auth
-      dockerfile: Dockerfile
+      context: ./shared
+      dockerfile: Dockerfile.dev
+    restart: always
+    environment:
+      - ENV=development
+      - SERVICE_NAME=user
     volumes:
-      - ./auth:/usr/src/app
+      - ./user:/usr/src/app
+    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     ports:
       - "8003:8000"
 
   order:
     build:
-      context: ./order
-      dockerfile: Dockerfile
+      context: ./shared
+      dockerfile: Dockerfile.dev
+    restart: always
+    environment:
+      - ENV=development
+      - SERVICE_NAME=order
     volumes:
       - ./order:/usr/src/app
+    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     ports:
       - "8004:8000"
+  
+  customer:
+    build:
+      context: ./shared
+      dockerfile: Dockerfile.dev
+    restart: always
+    environment:
+      - ENV=development
+      - SERVICE_NAME=customer
+    volumes:
+      - ./customer:/usr/src/app
+    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
+    ports:
+      - "8005:8000"
+  
+  database:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: Northwind
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  cache:
+    image: redis:7.2-alpine
+    hostname: redis
+    platform: linux/arm64/v8
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass mystrongredispassword

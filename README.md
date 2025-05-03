@@ -98,13 +98,3 @@ These entities will be connected using foreign keys, enforced by constraints and
 > 🧠 This project integrates relational databases, object storage, caching, and modern web development to meet the educational objectives of the Database Systems course while solving a real-world business problem.
 
 ## 📜 How to run this
-
-### Initialize the project
-
-1. **Install Docker**: Make sure you have Docker installed on your machine. You can download it from [Docker's official website](https://www.docker.com/get-started).
-
-2. **Clone the repository**: Clone this repository to your local machine using the following command:
-
-  ```bash
-  git clone git@github.com:truongng201/Database-IMS-Project.git
-  ```

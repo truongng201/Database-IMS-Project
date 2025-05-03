@@ -1,11 +1,20 @@
-from fastapi import FastAPI
-from routes import router as product_router
+import os
 
-app = FastAPI(title="Product Service")
+from fastapi import FastAPI
+from routes import router
+
+ENV = os.getenv("ENV", "development")
+SERVICE_NAME = os.getenv("SERVICE_NAME", None)
+APP_VERSION = os.getenv("APP_VERSION", None) if ENV == "production" else ENV
+API_VERSION = os.getenv("API_VERSION", "v1")
+
+app = FastAPI(title=SERVICE_NAME, version=APP_VERSION, root_path=f"/{API_VERSION}/{SERVICE_NAME}")
 
 # Register routes
-app.include_router(product_router, prefix="/products", tags=["products"])
+app.include_router(router, tags=[f"{SERVICE_NAME}"])
 
-@app.get("/products/health")
+
+@app.get(f"/health")
 def health_check():
-    return {"status": "Product Service is running!!!!"}
+    return {"status": f"{SERVICE_NAME} service is running with version {APP_VERSION}"}
+

@@ -32,19 +32,22 @@ WORKDIR /usr/src/app
 
 RUN echo -e 'CipherString = DEFAULT@SECLEVEL=1' >>/etc/ssl/openssl.cnf
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 ## add user
 RUN addgroup -S dev && adduser -S dev -G dev
 RUN mkdir -p /usr/src/app && \
     chown -R dev:dev /usr/src/app
+RUN mkdir -p /template && \
+    chown -R dev:dev /template
 
 # switch to non-root user
 USER dev
-
-COPY . /usr/src/app
 
 ## set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PATH="/opt/venv/bin:$PATH"
 
-CMD ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
+COPY ./template /template
