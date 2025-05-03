@@ -10,6 +10,7 @@ def get_all_products():
 def get_product(product_id: int):
     return {"status": "Success", "data": {}, "message": f"Get product with ID {product_id} successfully"}
 
+
 @router.post("/create-product")
 def create_product(product: dict):
     return {"status": "Success", "data": {}, "message": "Product created successfully"}
