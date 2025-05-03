@@ -1,0 +1,66 @@
+version: "3.2"
+
+services: # default port 5000
+  registry:
+    image: registry:2
+    restart: unless-stopped
+    volumes:
+      - /mnt/registry-data:/var/lib/registry
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+
+  sqldatabase: # default port 3306
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - /mnt/mysql-data:/var/lib/mysql
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+
+  cache: # default port 6379
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    volumes:
+      - /mnt/redis-data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --requirepass securepassword
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+      
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    environment:
+      MINIO_ACCESS_KEY: accesskey
+      MINIO_SECRET_KEY: secretkey
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - /mnt/minio-data:/data
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+
+networks:
+  proxy_net:
+    external: true
+
+
