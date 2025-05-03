@@ -1,0 +1,46 @@
+version: "3.2"
+
+services:
+  product:
+    image: nemo0122003/database-ims-product-service:latest
+    restart: unless-stopped
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+
+  supplier:
+    image: nemo0122003/database-ims-supplier-service:latest
+    restart: unless-stopped
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+  
+  user:
+    image: nemo0122003/database-ims-user-service:latest
+    restart: unless-stopped
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+  
+  order:
+    image: nemo0122003/database-ims-order-service:latest
+    restart: unless-stopped
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+
+  customer:
+    image: nemo0122003/database-ims-customer-service:latest
+    restart: unless-stopped
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+  
+networks:
+  proxy_net:
+    external: true

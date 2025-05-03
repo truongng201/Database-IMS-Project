@@ -1,19 +1,6 @@
 version: "3.2"
 
-services: # default port 5000
-  registry:
-    image: registry:2
-    restart: unless-stopped
-    volumes:
-      - /mnt/registry-data:/var/lib/registry
-    networks:
-      - proxy_net
-    deploy:
-      replicas: 1
-      placement:
-        constraints:
-          - node.role == manager
-
+services:
   sqldatabase: # default port 3306
     image: mysql:8.0
     restart: unless-stopped

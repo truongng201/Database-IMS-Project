@@ -1,0 +1,81 @@
+name: CI/CD {{SERVICE_NAME}} service pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check_folder_changed:
+    name: Check if {{SERVICE_NAME}} service folder changed
+    runs-on: ubuntu-latest
+    outputs:
+      is_changed: ${{ steps.changes.outputs.service }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            service:
+              - 'services/{{SERVICE_NAME}}/**'
+
+      # run only if "service" folder was changed
+      - name: "{{SERVICE_NAME}} service is changed"
+        if: steps.changes.outputs.service == 'true'
+        run: echo "Folder {{SERVICE_NAME}} in services has changed"
+
+      # run only if "service" folder was not changed
+      - name: "{{SERVICE_NAME}} service is not changed"
+        if: steps.changes.outputs.service == 'false'
+        run: echo "Folder {{SERVICE_NAME}} in services has not changed"
+
+  build_and_push:
+    name: Build and Push {{SERVICE_NAME}} Service Docker Image
+    runs-on: ubuntu-latest
+    needs: [check_folder_changed]
+    if: needs.check_folder_changed.outputs.is_changed == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up services config
+        run: |
+          cd services/{{SERVICE_NAME}}/config
+          echo "${{ secrets.SERVER_CONFIG_FILE }}" > config.yml
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          cd services/{{SERVICE_NAME}}/
+          docker build --build-arg SERVICE_NAME={{SERVICE_NAME}} --build-arg APP_VERSION=${{ github.sha }} --build-arg ENV=production -t ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-{{SERVICE_NAME}}-service:latest -f Dockerfile.prod .
+
+      - name: Push Docker image to Docker Hub
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-{{SERVICE_NAME}}-service:latest
+
+  pull_and_run_on_droplet:
+    needs: [build_and_push]
+    name: Pull and Run Docker Image on Droplet
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          cd ~/.ssh/ 
+          touch id_rsa && touch known_hosts && chmod 600 id_rsa
+          echo "${{ secrets.DIGITALOCEAN_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+      - name: Add Droplet to known hosts
+        run: ssh-keyscan ${{ secrets.SERVER_IP_ADDRESS}} >> ~/.ssh/known_hosts
+
+      - name: Pull and run Docker images on Droplet
+        run: |
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker pull ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-{{SERVICE_NAME}}-service:latest'
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker service update --force services_{{SERVICE_NAME}}'

@@ -64,7 +64,7 @@ These entities will be connected using foreign keys, enforced by constraints and
 - **ORM**: SQLAlchemy (or Prisma)
 - **DB Migration Tool**: Alembic (schema versioning)
 - **Validation**: Pydantic (FastAPI schema validation)
-- **Deployment**: Docker, Docker Compose, Nginx (reverse proxy)
+- **Deployment**: Docker, Docker Compose, Nginx-Proxy-Manager (reverse proxy), Portainer (container management)
 - **CI/CD**: GitHub Actions for testing and deployment automation
 
 ---
