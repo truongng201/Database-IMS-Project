@@ -6,6 +6,7 @@ services:
       context: ./shared
       dockerfile: Dockerfile.dev
     restart: always
+    container_name: product-service
     environment:
       - ENV=development
       - SERVICE_NAME=product
@@ -20,6 +21,7 @@ services:
       context: ./shared
       dockerfile: Dockerfile.dev
     restart: always
+    container_name: supplier-service
     environment:
       - ENV=development
       - SERVICE_NAME=supplier
@@ -34,6 +36,7 @@ services:
       context: ./shared
       dockerfile: Dockerfile.dev
     restart: always
+    container_name: user-service
     environment:
       - ENV=development
       - SERVICE_NAME=user
@@ -48,6 +51,7 @@ services:
       context: ./shared
       dockerfile: Dockerfile.dev
     restart: always
+    container_name: order-service
     environment:
       - ENV=development
       - SERVICE_NAME=order
@@ -62,6 +66,7 @@ services:
       context: ./shared
       dockerfile: Dockerfile.dev
     restart: always
+    container_name: customer-service
     environment:
       - ENV=development
       - SERVICE_NAME=customer
@@ -74,6 +79,7 @@ services:
   database:
     image: mysql:8.0
     restart: always
+    container_name: mysql-database
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: Northwind
@@ -87,8 +93,8 @@ services:
   cache:
     image: redis:7.2-alpine
     hostname: redis
-    platform: linux/arm64/v8
-    container_name: redis
+    # platform: linux/arm64/v8 # Uncomment if using ARM64
+    container_name: redis-cache
     restart: unless-stopped
     ports:
       - "6379:6379"
