@@ -12,4 +12,4 @@ def get_supplier(supplier_id: int):
 
 @router.post("/create-supplier")
 def create_supplier(supplier: dict):
-    return {"status": "Success", "data": {}, "message": "Supplier created successfully"}
+    return {"status": "Success", "data": {}, "message": "Supplier created successfully !"}

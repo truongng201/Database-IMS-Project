@@ -12,4 +12,4 @@ def get_order(order_id: int):
 
 @router.post("/create-order")
 def create_order(order: dict):
-    return {"status": "Success", "data": {}, "message": "Order created successfully"}
+    return {"status": "Success", "data": {}, "message": "Order created successfully !"}
