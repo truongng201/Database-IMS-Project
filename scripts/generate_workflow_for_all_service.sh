@@ -11,6 +11,10 @@ for SERVICE_NAME in $(ls services); do
     if [ ! -d "services/${SERVICE_NAME}" ]; then
         continue
     fi
+    # skip if service name is gateway
+    if [ "${SERVICE_NAME}" = "gateway" ]; then
+        continue
+    fi
 
     # replace template service placeholder with service name
     echo "Generating workflow for service ${SERVICE_NAME}"

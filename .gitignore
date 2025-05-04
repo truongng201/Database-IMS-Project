@@ -1,3 +1,7 @@
+######################################################################
+####### GitHub specific ignores for python projects ##################
+######################################################################
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -173,10 +177,14 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+######################################################################
+####### GitHub specific ignores for nextjs projects ##################
+######################################################################
+
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -189,7 +197,7 @@ cython_debug/
 /coverage
 
 # next.js
-/.next/
+.next/
 /out/
 
 # production
@@ -214,3 +222,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+######################################################################
+######################### Customer gitignore file ####################
+######################################################################
+
+# Add your custom gitignore rules below this line
+minio_data/
+mysql_data/
+redis_data/
+services/gateway/default.conf 
