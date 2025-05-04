@@ -1,6 +1,14 @@
 version: "3.2"
 
 services:
+  client:
+    image: nemo0122003/database-ims-client:latest
+    restart: unless-stopped
+    networks:
+      - proxy_net
+    deploy:
+      replicas: 1
+      
   product:
     image: nemo0122003/database-ims-product-service:latest
     restart: unless-stopped

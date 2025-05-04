@@ -12,4 +12,4 @@ def get_user(user_id: int):
 
 @router.post("/create-user")
 def create_user(user: dict):
-    return {"status": "Success", "data": {}, "message": "User created successfully"}
+    return {"status": "Success", "data": {}, "message": "User created successfully !"}

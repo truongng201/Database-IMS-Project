@@ -1,4 +1,4 @@
-name: CI/CD customer service pipeline
+name: CI/CD client service pipeline
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   check_folder_changed:
-    name: Check if customer service folder changed
+    name: Check if client service folder changed
     runs-on: ubuntu-latest
     outputs:
       is_changed: ${{ steps.changes.outputs.service }}
@@ -19,20 +19,20 @@ jobs:
         with:
           filters: |
             service:
-              - 'services/customer/**'
+              - 'client/**'
 
-      # run only if "service" folder was changed
-      - name: "customer service is changed"
+      # run only if "client" folder was changed
+      - name: "client is changed"
         if: steps.changes.outputs.service == 'true'
-        run: echo "Folder customer in services has changed"
+        run: echo "Folder client has changed"
 
       # run only if "service" folder was not changed
-      - name: "customer service is not changed"
+      - name: "client service is not changed"
         if: steps.changes.outputs.service == 'false'
-        run: echo "Folder customer in services has not changed"
+        run: echo "Folder client has not changed"
 
   build_and_push:
-    name: Build and Push customer Service Docker Image
+    name: Build and Push Client Docker Image
     runs-on: ubuntu-latest
     needs: [check_folder_changed]
     if: needs.check_folder_changed.outputs.is_changed == 'true'
@@ -53,11 +53,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          cd services/customer/
-          docker build --build-arg SERVICE_NAME=customer --build-arg APP_VERSION=${{ github.sha }} --build-arg ENV=production -t ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-customer-service:latest -f Dockerfile.prod .
+          cd client/
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-client:latest -f Dockerfile.prod .
 
       - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-customer-service:latest
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-client:latest
 
   pull_and_run_on_droplet:
     needs: [build_and_push]
@@ -77,6 +77,6 @@ jobs:
 
       - name: Pull and run Docker images on Droplet
         run: |
-          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker pull ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-customer-service:latest'
-          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker service update --force services_customer'
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker pull ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-client:latest'
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker service update --force services_client'
           ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker image prune -a -f'

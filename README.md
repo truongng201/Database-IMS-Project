@@ -76,7 +76,6 @@ These entities will be connected using foreign keys, enforced by constraints and
 | Nguyen Xuan Truong  | Software developer                   |
 | Le Ngoc Toan        | Software Developer                   |
 
-
 ---
 
 ## 📅 Timeline (Planned Milestones)
@@ -98,3 +97,71 @@ These entities will be connected using foreign keys, enforced by constraints and
 > 🧠 This project integrates relational databases, object storage, caching, and modern web development to meet the educational objectives of the Database Systems course while solving a real-world business problem.
 
 ## 📜 How to run this
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+- Docker [https://docs.docker.com/get-docker/]
+- Docker Compose [https://docs.docker.com/compose/install/]
+- make (if you are using Windows, you can use WSL2 to install make or use the make command in Git Bash) [https://www.gnu.org/software/make/]
+
+### Steps to run the project
+
+1. Clone the repository:
+
+    ```bash
+   git clone git@github.com:truongng201/Database-IMS-Project.git
+    cd Database-IMS-Project
+    ```
+
+2. Add your environment variables in the `.env` file. You can use the `.template.env` file as a template.
+
+3. Build and run the services:
+
+  ```bash
+      # To build the services
+    make services-up SERVICES='product' # To run the product service
+      # or
+    make services-up SERVICES='product order' # To run the product and order services
+
+    make services-down # To stop the services
+
+      # To run client service
+    make client-dev # To run the client service
+    make client-build # To build the client service
+    make client-start # To run the client service in build mode
+
+      # To run the all service
+    make all # To run all services
+  ```
+
+## 🖥️ Accessing the Application
+
+1. Access the application:
+    - Frontend: [http://localhost:3000](http://localhost:3000)
+    - Services: formatted as: <http://localhost:8080/v1/{service_name}>
+      - For example:
+        - Product: [http://localhost:8080/v1/product](http://localhost:8080/v1/product)
+        - Order: [http://localhost:8080/v1/order](http://localhost:8080/v1/order)
+    - MinIO: [http://localhost:9001](http://localhost:9001) (Console address with credentials from `.env`)
+    - MySQL Workbench or any other MySQL client to connect to the database.
+
+2. Access from the production environment:
+    - Frontend: [https://vinuni-database-ims.duckdns.org](https://vinuni-database-ims.duckdns.org)
+    - Services: formatted as: <https://api.vinuni-database-ims.duckdns.org/v1/{service_name}>
+      - For example:
+        - Product: [https://api.vinuni-database-ims.duckdns.org/v1/product](https://api.vinuni-database-ims.duckdns.org/v1/product)
+        - Order: [https://api.vinuni-database-ims.duckdns.org/v1/order](https://api.vinuni-database-ims.duckdns.org/v1/order)
+      - You can follow the health check of the services at - Product: [https://api.vinuni-database-ims.duckdns.org/v1/product/health](https://api.vinuni-database-ims.duckdns.org/v1/product/health).
+        - The response should be like this - the version here is the commit hash of the last commit that was pushed to the main branch.
+
+        ```json
+        {
+          "status": "product service is running with version d188e5be017ac569fdfd6894cd76bfed9ff02ac3",
+        }
+        ```
+
+    - MinIO: [https://minio.vinuni-database-ims.duckdns.org](https://minio.vinuni-database-ims.duckdns.org) (Ask the team for credentials)
+    - Portainer: [https://portainer.vinuni-database-ims.duckdns.org](https://portainer.vinuni-database-ims.duckdns.org) (Ask the team for credentials)
+    - ProxyManager: [https://proxy-manager.vinuni-database-ims.duckdns.org](https://proxy-manager.vinuni-database-ims.duckdns.org) (Ask the team for credentials)

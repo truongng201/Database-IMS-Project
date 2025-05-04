@@ -12,4 +12,4 @@ def get_customer(customer_id: int):
 
 @router.post("/create-customer")
 def create_customer(customer: dict):
-    return {"status": "Success", "data": {}, "message": "Customer created successfully"}
+    return {"status": "Success", "data": {}, "message": "Customer created successfully !"}
