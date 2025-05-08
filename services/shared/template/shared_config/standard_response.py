@@ -22,7 +22,7 @@ def standard_response(func: Callable[..., T]) -> Callable[..., StandardResponse[
         except CustomException as ce:
             raise ce
         except Exception as e:
-            logger.error(f"An error occurred: {str(e)}")
+            logger.error(f"An error occurred: {str(traceback.format_exc())}")
             raise CustomException(f"An error occurred: {str(e)}")
         
     @wraps(func)
