@@ -1,2 +1,3 @@
 from .GetAllProductQuery import GetAllProductQuery
 from .GetProductByIdQuery import GetProductByIdQuery
+from .CreateProductQuery import CreateProductQuery

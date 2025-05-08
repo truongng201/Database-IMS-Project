@@ -1,4 +1,3 @@
-# logger.py
 import logging
 from logging.config import dictConfig
 
@@ -17,14 +16,8 @@ LOGGING_CONFIG = {
         "default": {
             "formatter": "default",
             "class": "logging.StreamHandler",
-            "level": "INFO",
-        },
-        "file": {
-            "formatter": "default",
-            "class": "logging.FileHandler",
-            "filename": "logs/app.log",
-            "level": "INFO",
-        },
+            "level": "DEBUG",
+        }
     },
     "loggers": {
         "uvicorn": {
@@ -40,12 +33,12 @@ LOGGING_CONFIG = {
             "level": "INFO",
             "propagate": False,
         },
-        "myapp": { 
-            "handlers": ["default", "file"],
-            "level": "DEBUG",
-        },
+        "root": {
+            "handlers": ["default"],
+            "level": "DEBUG"
+        }
     },
 }
 
 dictConfig(LOGGING_CONFIG)
-logger = logging.getLogger("myapp")
+logger = logging.getLogger(__name__)

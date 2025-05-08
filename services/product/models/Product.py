@@ -47,7 +47,7 @@ class ProductUpdateModel(BaseModel):
             }
         }
     
-class ProductResponseModel(BaseModel):
+class ProductModel(BaseModel):
     product_id: int = Field(..., title="Product ID", description="Unique identifier for the product")
     name: str = Field(..., title="Product Name", description="Name of the product")
     description: str = Field(None, title="Product Description", description="Description of the product")
@@ -73,8 +73,8 @@ class ProductResponseModel(BaseModel):
             }
         }
         
-class ProductListResponseModel(BaseModel):
-    products: list[ProductResponseModel] = Field(..., title="List of Products", description="List of products")
+class ProductListModel(BaseModel):
+    products: list[ProductModel] = Field(..., title="List of Products", description="List of products")
     
     class Config:
         orm_mode = True

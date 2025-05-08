@@ -18,7 +18,9 @@ DROP TABLE IF EXISTS roles;
 CREATE TABLE categories (
     category_id  INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    description TEXT
+    description TEXT,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE suppliers (
@@ -26,7 +28,9 @@ CREATE TABLE suppliers (
     name VARCHAR(255) NOT NULL,
     contact_name VARCHAR(255),
     contact_email VARCHAR(255),
-    phone VARCHAR(50)
+    phone VARCHAR(50),
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE locations (
@@ -35,7 +39,9 @@ CREATE TABLE locations (
     address TEXT,
     city VARCHAR(100),
     state VARCHAR(100),
-    zip_code VARCHAR(20) NOT NULL
+    zip_code VARCHAR(20) NOT NULL,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE products (
@@ -47,6 +53,8 @@ CREATE TABLE products (
     supplier_id INT NOT NULL,
     location_id INT NOT NULL,
     image_url TEXT,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES categories(category_id),
     CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
     CONSTRAINT fk_location FOREIGN KEY (location_id) REFERENCES locations(location_id)
@@ -57,6 +65,8 @@ CREATE TABLE inventory (
     product_id INT NOT NULL,
     quantity INT NOT NULL,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     CONSTRAINT fk_product FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
@@ -66,7 +76,9 @@ CREATE TABLE customers (
     last_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(50),
-    address TEXT
+    address TEXT,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE orders (
@@ -74,6 +86,8 @@ CREATE TABLE orders (
     customer_id INT NOT NULL,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status VARCHAR(50) NOT NULL,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     CONSTRAINT fk_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id)
 );
 
@@ -83,6 +97,8 @@ CREATE TABLE order_items (
     product_id INT NOT NULL,
     quantity INT NOT NULL,
     price DECIMAL(10, 2) NOT NULL,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     CONSTRAINT fk_order FOREIGN KEY (order_id) REFERENCES orders(order_id),
     CONSTRAINT fk_product_order FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
@@ -90,7 +106,9 @@ CREATE TABLE order_items (
 CREATE TABLE roles (
     role_id INT AUTO_INCREMENT PRIMARY KEY,
     role_name VARCHAR(50) NOT NULL,
-    description TEXT
+    description TEXT,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE users (
@@ -101,7 +119,7 @@ CREATE TABLE users (
     role_id INT NOT NULL,
     full_name VARCHAR(255) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );

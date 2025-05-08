@@ -4,7 +4,7 @@ class GetAllProductQuery:
     def __init__(self):
         self.db = Database()
         
-    def execute(self, params=(100, 0)):
+    def execute(self, params=(1, 0)):
         query = """
         SELECT 
             p.product_id, 

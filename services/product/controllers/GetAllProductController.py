@@ -1,15 +1,15 @@
 from queries import GetAllProductQuery
-from models import ProductListResponseModel
+from models import ProductListModel
 
 class GetAllProductController:
     def __init__(self):
         self.query = GetAllProductQuery()
     
-    def execute(self) -> ProductListResponseModel:
+    def execute(self) -> ProductListModel:
         response = self.query.execute()
         if not response:
-            return ProductListResponseModel(products=[])
+            return ProductListModel(products=[])
         
-        return ProductListResponseModel(products=response)
+        return ProductListModel(products=response)
         
         

@@ -1,6 +1,7 @@
 import mysql.connector
 from mysql.connector import errorcode
 import os
+from .logger import logger
 
 class Database:
     def __init__(self):
@@ -20,11 +21,11 @@ class Database:
             self.connection = mysql.connector.connect(**self.config)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print("Something is wrong with your user name or password")
+                logger.error("Something is wrong with your user name or password")
             elif err.errno == errorcode.ER_BAD_DB_ERROR:
-                print("Database does not exist")
+                logger.error("Database does not exist")
             else:
-                print(err)
+                logger.error(f"Connect to database got error: {err}")
     
     def __close(self):
         if self.connection.is_connected():
@@ -42,11 +43,11 @@ class Database:
             self.connection.commit()
             return result
         except mysql.connector.Error as err:
-            print(f"Error: {err}")
+            logger.error(f"Query to database error: {err}")
             self.connection.rollback()
-            print("Transaction rolled back")
-            
+            logger.error(f"Transaction rolled back")
         finally:
             if cursor:
                 cursor.close()
             self.__close()
+        return None
