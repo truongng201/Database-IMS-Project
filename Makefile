@@ -1,5 +1,5 @@
 # Declare phony targets (not associated with actual files)
-.PHONY: all services-up services-down client-install client-dev client-build client-start
+.PHONY: all services-up services-down all-services-down client-install client-dev client-build client-start
 
 # === Combined target ===
 
@@ -34,6 +34,9 @@ services-up: db-up generate_default_nginx_conf
 
 # Stop backend services
 services-down:
+	docker-compose -f services/docker-compose.yml down --remove-orphans
+
+all-services-down:
 	docker-compose -f services/docker-compose.yml down --remove-orphans
 	docker-compose -f ims-database/docker-compose.yml down --remove-orphans
 

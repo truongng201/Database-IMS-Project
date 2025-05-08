@@ -1,0 +1,1 @@
+from .GetAllProductQuery import GetAllProductQuery

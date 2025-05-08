@@ -121,9 +121,9 @@ Make sure you have the following installed:
 
   ```bash
       # To build the services
-    make services-up SERVICES='product' # To run the product service
+    make services-up SERVICE='product' # To run the product service
       # or
-    make services-up SERVICES='product order' # To run the product and order services
+    make services-up SERVICE='product order' # To run the product and order services
 
     make services-down # To stop the services
 
@@ -136,7 +136,7 @@ Make sure you have the following installed:
     make all # To run all services
   ```
 
-## 🖥️ Accessing the Application
+## 🖥️ Accessing the Application 
 
 1. Access the application:
     - Frontend: [http://localhost:3000](http://localhost:3000)
