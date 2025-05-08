@@ -1,1 +1,2 @@
 from .GetAllProductController import GetAllProductController
+from .GetProductByIdController import GetProductByIdController

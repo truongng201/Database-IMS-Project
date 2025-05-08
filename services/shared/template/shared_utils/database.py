@@ -18,8 +18,6 @@ class Database:
     def __connect(self):
         try:
             self.connection = mysql.connector.connect(**self.config)
-            if self.connection.is_connected():
-                print("Connected to the database")
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 print("Something is wrong with your user name or password")
@@ -31,9 +29,6 @@ class Database:
     def __close(self):
         if self.connection.is_connected():
             self.connection.close()
-            print("Database connection closed")
-        else:
-            print("No active database connection to close")
             
     def execute_query(self, query, params=None):
         cursor = self.connection.cursor()
@@ -54,5 +49,4 @@ class Database:
         finally:
             if cursor:
                 cursor.close()
-                print("Cursor closed")
             self.__close()
