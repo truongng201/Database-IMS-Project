@@ -8,7 +8,7 @@ class CreateProductQuery:
     def execute(self, params: ProductCreateModel):
         query = """
         INSERT INTO products (name, description, price, image_url, category_id, supplier_id, location_id)
-        VALU (%s, %s, %s, %s, %s, %s, %s);
+        VALUES (%s, %s, %s, %s, %s, %s, %s);
         """
         
         params = (
