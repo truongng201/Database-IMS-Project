@@ -1,7 +1,10 @@
 from fastapi import HTTPException
 from functools import wraps
 from .response_model import StandardResponse
+from .custom_exception import CustomException
 from typing import TypeVar, Callable
+from shared_utils import logger
+import traceback
 import inspect
 
 T = TypeVar('T')
@@ -16,17 +19,11 @@ def standard_response(func: Callable[..., T]) -> Callable[..., StandardResponse[
                 data=result,
                 message="Operation completed successfully"
             )
-        except HTTPException:
-            raise
+        except CustomException as ce:
+            raise ce
         except Exception as e:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "status": "error",
-                    "message": str(e),
-                    "data": {}
-                }
-            )
+            logger.error(f"An error occurred: {str(traceback.format_exc())}")
+            raise CustomException(f"An error occurred: {str(e)}")
         
     @wraps(func)
     def sync_wrapper(*args, **kwargs) -> StandardResponse[T]:
@@ -37,17 +34,12 @@ def standard_response(func: Callable[..., T]) -> Callable[..., StandardResponse[
                 data=result,
                 message="Operation completed successfully"
             )
-        except HTTPException:
-            raise
+        except CustomException as ce:
+            raise ce
         except Exception as e:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "status": "error",
-                    "message": str(e),
-                    "data": {}
-                }
-            )
+            logger.error(f"An error occurred: {str(traceback.format_exc())}")
+            raise CustomException(f"An error occurred: {str(e)}")
+    
             
     if inspect.iscoroutinefunction(func):
         return async_wrapper

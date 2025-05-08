@@ -1,5 +1,6 @@
 from queries import GetProductByIdQuery
 from models import ProductModel
+from shared_config.custom_exception import NotFoundException, InvalidDataException
 
 class GetProductByIdController:
     def __init__(self):
@@ -7,10 +8,10 @@ class GetProductByIdController:
     
     def execute(self, product_id: int) -> ProductModel:
         if not isinstance(product_id, int) or product_id <= 0:
-            raise ValueError("Invalid product ID")
+            raise InvalidDataException("Invalid product ID hi   ")
         response = self.query.execute(product_id=product_id)
         if not response:
-            return None
+            raise NotFoundException("Product not found")
         
         return ProductModel(
             product_id=response.get("product_id"),

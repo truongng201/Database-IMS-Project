@@ -33,10 +33,11 @@ services-up: db-up generate_default_nginx_conf
 	@echo "Preprocessing service data..."
 	chmod +x ./scripts/run_services.sh
 	./scripts/run_services.sh $(SERVICE)
-	@echo "Starting gateway service..."
-	docker-compose -f services/docker-compose-gateway.yml up --build -d
 	@echo "Starting backend services..."
 	docker-compose -f services/docker-compose-services.yml up --build -d $(SERVICE)
+	@echo "Starting gateway service..."
+	docker-compose -f services/docker-compose-gateway.yml up --build -d
+	
 
 # Stop backend services
 services-down:

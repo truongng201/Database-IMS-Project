@@ -18,7 +18,8 @@ class Database:
         
     def __connect(self):
         try:
-            self.connection = mysql.connector.connect(**self.config)
+            if self.connection is None or not self.connection.is_connected():
+                self.connection = mysql.connector.connect(**self.config)
         except mysql.connector.Error as err:
             if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
                 logger.error("Something is wrong with your user name or password")
@@ -27,27 +28,35 @@ class Database:
             else:
                 logger.error(f"Connect to database got error: {err}")
     
-    def __close(self):
-        if self.connection.is_connected():
-            self.connection.close()
-            
     def execute_query(self, query, params=None):
-        cursor = self.connection.cursor()
+        cursor = None
         try:
+            # Ensure connection is alive
+            self.__connect()
+            
+            cursor = self.connection.cursor()
             self.connection.start_transaction()
+            
             if params:
                 cursor.execute(query, params)
             else:
                 cursor.execute(query)
+                
             result = cursor.fetchall()
             self.connection.commit()
             return result
         except mysql.connector.Error as err:
             logger.error(f"Query to database error: {err}")
-            self.connection.rollback()
-            logger.error(f"Transaction rolled back")
+            if self.connection:
+                self.connection.rollback()
+                logger.error(f"Transaction rolled back")
+            self.connection = None
+            raise 
         finally:
             if cursor:
                 cursor.close()
-            self.__close()
-        return None
+                
+    def close_connection(self):
+        if self.connection and self.connection.is_connected():
+            self.connection.close()
+            self.connection = None

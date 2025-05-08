@@ -3,8 +3,8 @@ import os
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import HTTPException
 from routes import router
+from shared_config.custom_exception import CustomException
 
 ENV = os.getenv("ENV", "development")
 SERVICE_NAME = os.getenv("SERVICE_NAME", "service")
@@ -21,20 +21,13 @@ app.include_router(router, tags=[f"{SERVICE_NAME}"])
 def health_check():
     return {"status": f"{SERVICE_NAME} service is running with version {APP_VERSION}"}
 
-@app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
-    # If the detail is already in our standard format, use it directly
-    if isinstance(exc.detail, dict) and "status" in exc.detail:
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=exc.detail
-        )
-    # Otherwise, wrap it in our standard format
+@app.exception_handler(CustomException)
+async def http_exception_handler(request: Request, exc: CustomException):
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "status": "error",
-            "message": str(exc.detail),
+            "message": str(exc.message),
             "data": {}
         }
     )

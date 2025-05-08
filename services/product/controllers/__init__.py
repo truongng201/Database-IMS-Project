@@ -1,3 +1,5 @@
 from .GetAllProductController import GetAllProductController
 from .GetProductByIdController import GetProductByIdController
 from .CreateProductController import CreateProductController
+from .UpdateProductController import UpdateProductController
+from .DeleteProductController import DeleteProductController

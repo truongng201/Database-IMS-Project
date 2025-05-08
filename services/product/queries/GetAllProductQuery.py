@@ -4,7 +4,7 @@ class GetAllProductQuery:
     def __init__(self):
         self.db = Database()
         
-    def execute(self, params=(1, 0)):
+    def execute(self, params=(100, 0)):
         query = """
         SELECT 
             p.product_id, 
@@ -23,6 +23,10 @@ class GetAllProductQuery:
         """
         
         result = self.db.execute_query(query, params)
+        
+        if not result:
+            return []
+        
         formatted_result = [
             {
                 "product_id": row[0],
@@ -36,4 +40,4 @@ class GetAllProductQuery:
             }
             for row in result
         ]
-        return formatted_result if formatted_result else []
+        return formatted_result

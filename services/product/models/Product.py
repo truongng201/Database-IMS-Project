@@ -24,6 +24,7 @@ class ProductCreateModel(BaseModel):
         }
         
 class ProductUpdateModel(BaseModel):
+    product_id: int = Field(..., title="Product ID", description="Unique identifier for the product")
     name: str = Field(None, title="Product Name", description="Name of the product")
     description: str = Field(None, title="Product Description", description="Description of the product")
     price: float = Field(None, title="Product Price", description="Price of the product")
