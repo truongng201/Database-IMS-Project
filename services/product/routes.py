@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from controllers import GetAllProductController, GetProductByIdController, CreateProductController, UpdateProductController, DeleteProductController
-from models import ProductCreateModel, ProductModel, ProductUpdateModel
+from controllers import *
+from models import *
 from shared_config import StandardResponse, standard_response
 router = APIRouter()
 
@@ -11,7 +11,7 @@ def get_all_products():
     response = controller.execute()
     return response.products
 
-@router.get("/get-product/{product_id}", response_model=StandardResponse[ProductModel])
+@router.get("/get-product/{product_id}", response_model=StandardResponse)
 @standard_response
 def get_product(product_id: int):
     controller = GetProductByIdController()
@@ -40,4 +40,30 @@ def update_product(product: ProductUpdateModel):
 def delete_product(product_id: int):
     controller = DeleteProductController()
     controller.execute(product_id=product_id)
+    return {}
+
+
+@router.get("/categories", response_model=StandardResponse)
+@standard_response
+def get_categories():
+    controller = GetAllCategoriesController()
+    response = controller.execute()
+    return response
+
+
+@router.get("/products-by-category/{category_id}", response_model=StandardResponse)
+@standard_response
+def get_products_by_category(category_id: int):
+    return {}
+    # controller = GetProductsByCategoryController()
+    # response = controller.execute(category_id=category_id)
+    # return response.products
+
+
+@router.get("/category-with-products", response_model=StandardResponse)
+@standard_response
+def get_category_with_products():
+    # controller = GetCategoryWithProductsController()
+    # response = controller.execute()
+    # return response.categories
     return {}
