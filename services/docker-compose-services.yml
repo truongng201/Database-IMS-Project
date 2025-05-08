@@ -1,18 +1,10 @@
 version: "3.9"
 
+networks:
+  shared-network:
+    external: true
+
 services:
-  gateway:
-    image: nginx:alpine
-    restart: always
-    container_name: gateway-service
-    ports:
-      - "8080:80"
-    volumes:
-      - ./gateway/default.conf:/etc/nginx/conf.d/default.conf:ro
-    networks:
-      - shared-network
-    depends_on:
-      - product
   product:
     build:
       context: ./shared
@@ -86,7 +78,3 @@ services:
     command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     networks:
       - shared-network
-
-networks:
-  shared-network:
-    external: true
