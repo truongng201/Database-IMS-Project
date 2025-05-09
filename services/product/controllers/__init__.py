@@ -4,5 +4,4 @@ from .CreateProductController import CreateProductController
 from .UpdateProductController import UpdateProductController
 from .DeleteProductController import DeleteProductController
 from .GetAllCategoriesController import GetAllCategoriesController
-# from .GetProductsByCategoryController import GetProductsByCategoryController
-# from .GetCategoryWithProductsController import GetCategoryWithProductsController
+from .GetProductsByCategoryController import GetProductsByCategoryController
