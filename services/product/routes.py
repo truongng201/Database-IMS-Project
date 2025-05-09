@@ -1,17 +1,69 @@
-from fastapi import APIRouter
-
+from fastapi import APIRouter, HTTPException
+from controllers import *
+from models import *
+from shared_config import StandardResponse, standard_response
 router = APIRouter()
 
-@router.get("/get-all-products")
+@router.get("/get-all-products", response_model=StandardResponse)
+@standard_response
 def get_all_products():
-    return {"status": "Success", "data": [], "message": "Get all products successfully"}
+    controller = GetAllProductController()
+    response = controller.execute()
+    return response.products
 
-@router.get("/get-product/{product_id}")
+@router.get("/get-product/{product_id}", response_model=StandardResponse)
+@standard_response
 def get_product(product_id: int):
-    return {"status": "Success", "data": {}, "message": f"Get product with ID {product_id} successfully"}
+    controller = GetProductByIdController()
+    response = controller.execute(product_id=product_id)
+    return response
 
 
-@router.post("/create-product")
-def create_product(product: dict):
-    return {"status": "Success", "data": {}, "message": "Product created successfully !"}
+@router.post("/create-product", response_model=StandardResponse)
+@standard_response
+def create_product(product: ProductCreateModel):
+    controller = CreateProductController()
+    controller.execute(product)
+    return {}
 
+
+@router.post("/update-product", response_model=StandardResponse)
+@standard_response
+def update_product(product: ProductUpdateModel):
+    controller = UpdateProductController()
+    controller.execute(product)
+    return {}
+
+
+@router.delete("/delete-product", response_model=StandardResponse)
+@standard_response
+def delete_product(product_id: int):
+    controller = DeleteProductController()
+    controller.execute(product_id=product_id)
+    return {}
+
+
+@router.get("/categories", response_model=StandardResponse)
+@standard_response
+def get_categories():
+    controller = GetAllCategoriesController()
+    response = controller.execute()
+    return response
+
+
+@router.get("/products-by-category/{category_id}", response_model=StandardResponse)
+@standard_response
+def get_products_by_category(category_id: int):
+    return {}
+    # controller = GetProductsByCategoryController()
+    # response = controller.execute(category_id=category_id)
+    # return response.products
+
+
+@router.get("/category-with-products", response_model=StandardResponse)
+@standard_response
+def get_category_with_products():
+    # controller = GetCategoryWithProductsController()
+    # response = controller.execute()
+    # return response.categories
+    return {}

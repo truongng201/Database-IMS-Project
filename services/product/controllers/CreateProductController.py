@@ -1,0 +1,37 @@
+from queries import CreateProductQuery
+from models import ProductCreateModel
+from shared_utils import logger
+from shared_config.custom_exception import InvalidDataException
+
+
+
+class CreateProductController:
+    def __init__(self):
+        self.query = CreateProductQuery()
+    
+    def execute(self, product: ProductCreateModel):
+        if not isinstance(product, ProductCreateModel):
+            raise InvalidDataException("Invalid product data")
+        if not product.name or not product.description or not product.price:
+            raise InvalidDataException("Name, description, and price cannot be empty")
+        if product.price <= 0:
+            raise InvalidDataException("Price must be greater than zero")
+        if not product.image_url:
+            raise InvalidDataException("Image URL cannot be empty")
+        if product.category_id <= 0:
+            raise InvalidDataException("Invalid category ID")
+        if product.supplier_id <= 0:
+            raise InvalidDataException("Invalid supplier ID")
+        if product.location_id <= 0:
+            raise InvalidDataException("Invalid location ID")
+
+
+        response = self.query.execute(product)
+        if not response:
+            raise Exception("Failed to create product")
+
+        logger.info(f"Product created with name: {product.name}")
+        return True
+        
+        
+        
