@@ -9,8 +9,15 @@ if [ "$#" -eq 0 ]; then
   exit 1
 fi
 
-# Base directory containing service folders
+# Base directories
 SERVICES_DIR="./services"
+SHARED_TEMPLATE_DIR="$SERVICES_DIR/shared/template"
+
+# Validate shared template exists
+if [ ! -d "$SHARED_TEMPLATE_DIR" ]; then
+  echo "❌ Shared template directory not found: $SHARED_TEMPLATE_DIR"
+  exit 1
+fi
 
 # Iterate over each passed service
 for SERVICE in "$@"; do
@@ -19,14 +26,13 @@ for SERVICE in "$@"; do
   if [ -d "$SERVICE_PATH" ]; then
     echo "🔧 Processing service: $SERVICE"
 
-    # Remove shared_config, shared_utils, and main.py if they exist
-    rm -rf "$SERVICE_PATH/shared_config" || echo "⚠️ $SERVICE/shared_config not found"
-    rm -rf "$SERVICE_PATH/shared_utils" || echo "⚠️ $SERVICE/shared_utils not found"
-    rm -f "$SERVICE_PATH/main.py" || echo "⚠️ $SERVICE/main.py not found"
+    # Copy shared template files into the service
+    cp -r "$SHARED_TEMPLATE_DIR/"* "$SERVICE_PATH/"
 
-    echo "✅ Cleaned $SERVICE"
+    echo "✅ Injected shared template into $SERVICE"
   else
     echo "❌ Service directory $SERVICE_PATH does not exist"
   fi
 done
-echo "🔧 All specified services have been processed."
+
+echo "🚀 All specified services have been updated with shared templates."

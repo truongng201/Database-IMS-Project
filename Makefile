@@ -10,11 +10,18 @@ all: services-up client-dev
 
 # Create a shared network for the backend services
 network:
-	@if ! docker network inspect shared-network > /dev/null 2>&1; then \
-		docker network create --driver overlay --attachable shared-network; \
-		echo "Network 'shared-network' created."; \
+	@if ! docker info --format '{{.Swarm.LocalNodeState}}' | grep -qE 'active|ready'; then \
+		echo "🔧 Initializing Docker Swarm..."; \
+		docker swarm init; \
 	else \
-		echo "Network 'shared-network' already exists."; \
+		echo "✅ Docker Swarm already initialized."; \
+	fi
+
+	@if ! docker network inspect shared-network > /dev/null 2>&1; then \
+		echo "🔧 Creating overlay network 'shared-network'..."; \
+		docker network create --driver overlay --attachable shared-network; \
+	else \
+		echo "✅ Network 'shared-network' already exists."; \
 	fi
 
 # Build and start all database services in detached mode
