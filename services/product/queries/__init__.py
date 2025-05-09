@@ -4,3 +4,4 @@ from .CreateProductQuery import CreateProductQuery
 from .UpdateProductQuery import UpdateProductQuery
 from .DeleteProductQuery import DeleteProductQuery
 from .GetAllCategoriesQuery import GetAllCategoriesQuery
+from .GetProductsByCategoryQuery import GetProductsByCategoryQuery

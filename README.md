@@ -120,6 +120,8 @@ Make sure you have the following installed:
 3. Build and run the services:
 
   ```bash
+      # Make sure in the root directory of the project and down all the services first
+    make services-down # To stop all the services then you can run the services normally
       # To build the services
     make services-up SERVICE='product' # To run the product service
       # or

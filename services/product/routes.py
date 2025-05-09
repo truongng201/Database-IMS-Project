@@ -54,16 +54,6 @@ def get_categories():
 @router.get("/products-by-category/{category_id}", response_model=StandardResponse)
 @standard_response
 def get_products_by_category(category_id: int):
-    return {}
-    # controller = GetProductsByCategoryController()
-    # response = controller.execute(category_id=category_id)
-    # return response.products
-
-
-@router.get("/category-with-products", response_model=StandardResponse)
-@standard_response
-def get_category_with_products():
-    # controller = GetCategoryWithProductsController()
-    # response = controller.execute()
-    # return response.categories
-    return {}
+    controller = GetProductsByCategoryController()
+    response = controller.execute(category_id=category_id)
+    return response
