@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from controllers import *
 from models import *
 from shared_config import StandardResponse, standard_response
