@@ -15,6 +15,9 @@ class Database:
         }
         self.connection = None
         self.__connect()
+        if not self.connection:
+            logger.error("Failed to connect to the database")
+            raise Exception("Something went wrong")
         
     def __connect(self):
         try:
