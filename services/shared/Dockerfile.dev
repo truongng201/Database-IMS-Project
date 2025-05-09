@@ -14,7 +14,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 ## add and install requirements
 RUN pip install --upgrade pip && pip install pip-tools
-COPY requirements.txt requirements.txt
+COPY ./template/requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 ## build-image
