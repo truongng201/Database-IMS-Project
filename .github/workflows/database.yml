@@ -1,0 +1,55 @@
+name: CI/CD database service pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check_folder_changed:
+    name: Check if database folder changed
+    runs-on: ubuntu-latest
+    outputs:
+      is_changed: ${{ steps.changes.outputs.database }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            database:
+              - 'ims-database/init-scripts/**'
+
+      # run only if "database" folder was changed
+      - name: "database is changed"
+        if: steps.changes.outputs.database == 'true'
+        run: echo "Folder init scripts in databases has changed"
+
+      # run only if "database" folder was not changed
+      - name: "database is not changed"
+        if: steps.changes.outputs.database == 'false'
+        run: echo "Folder init scripts in databases has not changed"
+
+  run_on_droplet:
+    needs: [check_folder_changed]
+    name: Run database init scripts on Droplet
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh/
+          cd ~/.ssh/ 
+          touch id_rsa && touch known_hosts && chmod 600 id_rsa
+          echo "${{ secrets.DIGITALOCEAN_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+      - name: Add Droplet to known hosts
+        run: ssh-keyscan ${{ secrets.SERVER_IP_ADDRESS}} >> ~/.ssh/known_hosts
+
+      - name: Run database init scripts
+        run: |
+          scp -r ims-database/init-scripts/* ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}}:/mnt/mysql/init-scripts/
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'rm -rf /mnt/mysql/data/*'
+          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker service update --force database_sqldatabase'
+        
