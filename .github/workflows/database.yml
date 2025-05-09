@@ -39,7 +39,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Install SSH key
         run: |
           mkdir -p ~/.ssh/
@@ -53,6 +53,8 @@ jobs:
       - name: Run database init scripts
         run: |
           scp -r ./ims-database/init-scripts/* ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}}:/mnt/mysql/init-scripts/
-          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'rm -rf /mnt/mysql/data/*'
-          ssh ${{ secrets.SERVER_USER}}@${{ secrets.SERVER_IP_ADDRESS}} 'docker service update --force database_sqldatabase'
-        
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP_ADDRESS }} '
+                docker service scale database_sqldatabase=0 &&
+                rm -rf /mnt/mysql/data/* &&
+                docker service scale database_sqldatabase=1
+          '
