@@ -31,7 +31,9 @@ def register(payload: RegisterModel):
 @router.get("/get-all-roles", response_model=StandardResponse)
 @standard_response
 def get_all_roles():
-    return {}
+    controller = GetAllRolesController()
+    response = controller.execute()
+    return response
 
 
 @router.post("/update-user-info", response_model=StandardResponse)
