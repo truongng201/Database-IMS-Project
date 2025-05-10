@@ -41,18 +41,18 @@ services-up: db-up generate_default_nginx_conf
 	chmod +x ./scripts/run_services.sh
 	./scripts/run_services.sh $(SERVICE)
 	@echo "Starting backend services..."
-	docker-compose -f services/docker-compose-services.yml up --build -d $(SERVICE)
+	docker-compose --env-file .env -f services/docker-compose-services.yml up --build -d $(SERVICE)
 	@echo "Starting gateway service..."
-	docker-compose -f services/docker-compose-gateway.yml up --build -d
+	docker-compose --env-file .env -f services/docker-compose-gateway.yml up --build -d
 	
 
 # Stop backend services
 services-down:
-	docker-compose -f services/docker-compose-services.yml down --remove-orphans
+	docker-compose --env-file .env -f services/docker-compose-services.yml down --remove-orphans
 
 all-services-down:
-	docker-compose -f services/docker-compose-gateway.yml down --remove-orphans
-	docker-compose -f ims-database/docker-compose.yml down --remove-orphans
+	docker-compose --env-file .env -f services/docker-compose-gateway.yml down --remove-orphans
+	docker-compose --env-file .env -f ims-database/docker-compose.yml down --remove-orphans
 
 # Show logs from backend services
 services-logs:

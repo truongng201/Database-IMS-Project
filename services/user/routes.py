@@ -1,15 +1,38 @@
 from fastapi import APIRouter
+from shared_config import StandardResponse, standard_response
 
 router = APIRouter()
 
-@router.get("/get-all-users")
-def get_all_users():
-    return {"status": "Success", "data": [], "message": "Get all users successfully"}
+@router.post("/login", response_model=StandardResponse)
+@standard_response
+def login():
+    return {
+        "access_token": "string",
+        "refresh_token": "string",
+    }
 
-@router.get("/get-user/{user_id}")
-def get_user(user_id: int):
-    return {"status": "Success", "data": {}, "message": f"Get user with ID {user_id} successfully"}
+@router.get("/get-user-detail", response_model=StandardResponse)
+@standard_response
+def get_user_detail(user_id: int):
+    return {}
 
-@router.post("/create-user")
-def create_user(user: dict):
-    return {"status": "Success", "data": {}, "message": "User created successfully !"}
+@router.post("/register", response_model=StandardResponse)
+@standard_response
+def register(user: dict):
+    return {}
+
+@router.post("/update-user-info", response_model=StandardResponse)
+@standard_response
+def update_user_info(user: dict):
+    return {}
+
+@router.delete("/delete-user", response_model=StandardResponse)
+@standard_response
+def delete_user(user_id: int):
+    return {}
+
+@router.post("/logout", response_model=StandardResponse)
+@standard_response
+def logout():
+    return {}
+

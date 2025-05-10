@@ -14,9 +14,22 @@ services:
     environment:
       - ENV=development
       - SERVICE_NAME=product
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - ./product:/usr/src/app
-    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
+    command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     networks:
       - shared-network
   supplier:
@@ -28,9 +41,22 @@ services:
     environment:
       - ENV=development
       - SERVICE_NAME=supplier
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - ./supplier:/usr/src/app
-    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
+    command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     networks:
       - shared-network
 
@@ -43,9 +69,22 @@ services:
     environment:
       - ENV=development
       - SERVICE_NAME=user
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - ./user:/usr/src/app
-    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
+    command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     networks:
       - shared-network
 
@@ -58,9 +97,22 @@ services:
     environment:
       - ENV=development
       - SERVICE_NAME=order
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - ./order:/usr/src/app
-    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
+    command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     networks:
       - shared-network
 
@@ -73,8 +125,21 @@ services:
     environment:
       - ENV=development
       - SERVICE_NAME=customer
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MINIO_URL=${MINIO_URL}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - ./customer:/usr/src/app
-    command: ["/entrypoint.sh", "uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
+    command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
     networks:
       - shared-network

@@ -160,7 +160,9 @@ Make sure you have the following installed:
 
         ```json
         {
-          "status": "product service is running with version d188e5be017ac569fdfd6894cd76bfed9ff02ac3",
+          "status": "success",
+          "data": "product service is running with version d188e5be017ac569fdfd6894cd76bfed9ff02ac3",
+          "message": "Operation completed successfully"
         }
         ```
 
