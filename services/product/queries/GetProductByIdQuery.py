@@ -23,6 +23,7 @@ class GetProductByIdQuery:
         """
         
         result = self.db.execute_query(query, (product_id,))
+        self.db.close_pool()
         if not result:
             return {}
         

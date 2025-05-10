@@ -12,6 +12,7 @@ class UpdateProductQuery:
         """
         res = self.db.execute_query(query, (product_id,))
         if not res:
+            self.db.close_pool()
             return False
         return True
         
@@ -33,4 +34,5 @@ class UpdateProductQuery:
             updated_product.product_id
         )
         res = self.db.execute_query(query, params)
+        self.db.close_pool()
         return True if res is not None else False

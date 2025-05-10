@@ -1,15 +1,64 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, Depends
+from shared_config import StandardResponse, standard_response
+from shared_utils import login_required
+from controllers import *
+from models import LoginModel, RegisterModel, TokensModel, UpdateUserModel
 
 router = APIRouter()
 
-@router.get("/get-all-users")
-def get_all_users():
-    return {"status": "Success", "data": [], "message": "Get all users successfully"}
+@router.post("/login", response_model=StandardResponse)
+@standard_response
+def login(payload: LoginModel, request: Request) -> TokensModel:
+    client_ip = request.client.host
+    user_agent = request.headers.get("User-Agent")
+    controller = LoginController()
+    response = controller.execute(payload, client_ip, user_agent)
+    return response
 
-@router.get("/get-user/{user_id}")
-def get_user(user_id: int):
-    return {"status": "Success", "data": {}, "message": f"Get user with ID {user_id} successfully"}
+@router.get("/get-user-detail", response_model=StandardResponse)
+@standard_response
+def get_user_detail(user_id: int = Depends(login_required)):
+    controller = GetUserDetailController()
+    response = controller.execute(user_id)
+    return response
 
-@router.post("/create-user")
-def create_user(user: dict):
-    return {"status": "Success", "data": {}, "message": "User created successfully !"}
+
+@router.post("/register", response_model=StandardResponse)
+@standard_response
+def register(payload: RegisterModel):
+    controller = RegisterController()
+    controller.execute(payload)
+    return {}
+
+
+@router.get("/get-all-roles", response_model=StandardResponse)
+@standard_response
+def get_all_roles():
+    controller = GetAllRolesController()
+    response = controller.execute()
+    return response
+
+
+@router.post("/update-user-info", response_model=StandardResponse)
+@standard_response
+def update_user_info(updated_user: UpdateUserModel, user_id: int = Depends(login_required)):
+    controller = UpdateUserController()
+    controller.execute(updated_user, user_id)
+    return {}
+
+
+@router.post("/logout", response_model=StandardResponse)
+@standard_response
+def logout(refresh_token: str, request: Request, user_id: int = Depends(login_required)):
+    access_token = request.headers.get("Authorization")
+    controller = LogoutController()
+    controller.execute(user_id, refresh_token, access_token)
+    return {}
+
+
+@router.post("/get-new-access-token", response_model=StandardResponse)
+@standard_response
+def get_new_access_token(refresh_token: str):
+    controller = GetNewAccessTokenController()
+    response = controller.execute(refresh_token)
+    return response
