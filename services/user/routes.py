@@ -43,14 +43,13 @@ def update_user_info(user: dict):
     return {}
 
 
-@router.delete("/delete-user", response_model=StandardResponse)
-@standard_response
-def delete_user(user_id: int):
-    return {}
-
-
 @router.post("/logout", response_model=StandardResponse)
 @standard_response
-def logout():
+def logout(user_id: dict = Depends(login_required)):
     return {}
 
+
+@router.post("/get-new-access-token", response_model=StandardResponse)
+@standard_response
+def get_new_access_token(refresh_token: str):
+    return {}
