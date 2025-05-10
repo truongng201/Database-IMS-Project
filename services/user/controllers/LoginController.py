@@ -1,11 +1,14 @@
 import re
 import bcrypt
-import random
+import secrets
+import string
 
 from queries import LoginQuery
 from models import LoginModel, TokensModel, LoginLogModel
 from shared_config.custom_exception import InvalidDataException
 from shared_utils import sign_jwt, Cache, logger
+
+EXPIRATION_TIME = 60 * 60 * 24 * 7  # 7 days
 
 class LoginController:
     def __init__(self):
@@ -17,7 +20,7 @@ class LoginController:
         return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
     
         
-    def execute(self, payload: LoginModel) -> TokensModel:
+    def execute(self, payload: LoginModel, client_ip: str, user_agent: str) -> TokensModel:
         email = payload.email
         password = payload.password
         
@@ -51,14 +54,15 @@ class LoginController:
         # Return the tokens
         
         # Generate random string for refresh token
-        refresh_token = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=32))
+        alphabet = string.ascii_lowercase + string.digits
+        refresh_token = ''.join(secrets.choice(alphabet) for _ in range(64))
         
         # Store the refresh token in the database
         loginlog = LoginLogModel(
             user_id=user.get("user_id"),
             refresh_token=refresh_token,
-            ip_address=payload.ip_address,
-            user_agent=payload.user_agent
+            ip_address=client_ip,
+            user_agent=user_agent
         )
         res = self.query.create_login_log(loginlog)
         if not res:
@@ -68,12 +72,15 @@ class LoginController:
         jwt_payload ={
             "user_id": user.get("user_id"),
             "email": user.get("email"),
-            "name": user.get("name"),
+            "username": user.get("username"),
         }
-        access_token = sign_jwt(jwt_payload, expires_in=3600)  # 1 hour expiration time
+        access_token = sign_jwt(jwt_payload, expires_in=EXPIRATION_TIME)
         
         # Store the access token in the cache
         self.cache.set(access_token, refresh_token)
+        
+
+        logger.info(f"Login successful for email: {payload.email}")
         
         return TokensModel(
             access_token=access_token,

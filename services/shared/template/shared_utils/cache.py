@@ -46,7 +46,10 @@ class Cache:
         """
         try:
             if self.client:
-                self.client.set(key, value, ex=ttl)
+                if ttl > 0:
+                    self.client.set(key, value, ex=ttl)
+                else:
+                    self.client.set(key, value)
         except Exception as e:
             logger.error(f"Error setting key '{key}': {e}")
             raise Exception("Something went wrong")

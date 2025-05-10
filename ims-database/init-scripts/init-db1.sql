@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS locations;
 DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS roles;
-DROP TABLE IF EXISTS loginlogs;
+DROP TABLE IF EXISTS login_logs;
 
 -- CREATE TABLES CORE SCHEMA
 CREATE TABLE categories (
@@ -125,7 +125,7 @@ CREATE TABLE users (
     CONSTRAINT fk_role FOREIGN KEY (role_id) REFERENCES roles(role_id)
 );
 
-CREATE TABLE loginlogs (
+CREATE TABLE login_logs (
     log_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     refresh_token VARCHAR(255),

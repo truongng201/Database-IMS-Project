@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from shared_config import StandardResponse, standard_response
 from controllers import *
 from models import LoginModel, RegisterModel, TokensModel
@@ -7,9 +7,11 @@ router = APIRouter()
 
 @router.post("/login", response_model=StandardResponse)
 @standard_response
-def login(payload: LoginModel) -> TokensModel:
+def login(payload: LoginModel, request: Request) -> TokensModel:
+    client_ip = request.client.host
+    user_agent = request.headers.get("User-Agent")
     controller = LoginController()
-    response = controller.execute(payload)
+    response = controller.execute(payload, client_ip, user_agent)
     return response
 
 @router.get("/get-user-detail", response_model=StandardResponse)

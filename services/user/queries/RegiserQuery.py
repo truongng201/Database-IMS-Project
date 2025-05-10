@@ -51,7 +51,7 @@ class RegisterQuery:
             True
         )
         result = self.db.execute_query(query, params)
+        self.db.close_pool()
         if result is None:
             return False
-        self.db.close_pool()
         return True

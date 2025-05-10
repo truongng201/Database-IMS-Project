@@ -33,7 +33,7 @@ class LoginQuery:
     def create_login_log(self, loginlog: LoginLogModel):
         query = """
             INSERT INTO
-                loginlogs (user_id, refresh_token, ip_address, user_agent)
+                login_logs (user_id, refresh_token, ip_address, user_agent)
             VALUES (%s, %s, %s, %s)
         """
 
@@ -44,7 +44,7 @@ class LoginQuery:
             loginlog.user_agent
         )
         result = self.db.execute_query(query, params)
-        if not result:
-            return False
         self.db.close_pool()
+        if result is None:
+            return False
         return True

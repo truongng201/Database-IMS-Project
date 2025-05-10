@@ -27,6 +27,8 @@ services:
       - MINIO_BUCKET=${MINIO_BUCKET}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
     volumes:
       - ./product:/usr/src/app
     command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
@@ -54,6 +56,8 @@ services:
       - MINIO_BUCKET=${MINIO_BUCKET}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
     volumes:
       - ./supplier:/usr/src/app
     command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
@@ -82,6 +86,8 @@ services:
       - MINIO_BUCKET=${MINIO_BUCKET}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
     volumes:
       - ./user:/usr/src/app
     command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
@@ -110,6 +116,8 @@ services:
       - MINIO_BUCKET=${MINIO_BUCKET}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
     volumes:
       - ./order:/usr/src/app
     command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
@@ -138,6 +146,8 @@ services:
       - MINIO_BUCKET=${MINIO_BUCKET}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
     volumes:
       - ./customer:/usr/src/app
     command: ["uvicorn", "main:app", "--port", "8000", "--host", "0.0.0.0", "--reload", "--reload-dir", "/usr/src/app"]
