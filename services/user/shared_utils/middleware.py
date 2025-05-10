@@ -3,6 +3,7 @@ from fastapi.security.api_key import APIKeyHeader
 from shared_config.custom_exception import UnauthorizedException
 from .token import verify_token
 from .logger import logger
+from .cache import Cache
 
 # Instantiate APIKeyHeader
 api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
@@ -13,6 +14,10 @@ def login_required(token: str = Security(api_key_header)):
     """
     if not token:
         logger.error("No token provided")
+        raise UnauthorizedException("You are not authenticated")
+    cache = Cache()
+    if cache.get(token):
+        logger.info("Token is in blacklist")
         raise UnauthorizedException("You are not authenticated")
     
     try:

@@ -8,7 +8,7 @@ from models import LoginModel, TokensModel, LoginLogModel
 from shared_config.custom_exception import InvalidDataException
 from shared_utils import sign_token, logger
 
-EXPIRATION_TIME = 60 * 60 * 24 * 7  # 7 days
+EXPIRATION_TIME = 60 * 60 # 1 hour
 
 class LoginController:
     def __init__(self):
