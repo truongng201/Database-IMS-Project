@@ -59,4 +59,6 @@ def logout(refresh_token: str, request: Request, user_id: int = Depends(login_re
 @router.post("/get-new-access-token", response_model=StandardResponse)
 @standard_response
 def get_new_access_token(refresh_token: str):
-    return {}
+    controller = GetNewAccessTokenController()
+    response = controller.execute(refresh_token)
+    return response

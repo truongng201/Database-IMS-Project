@@ -4,3 +4,4 @@ from .GetAllRolesController import GetAllRolesController
 from .GetUserDetailController import GetUserDetailController
 from .UpdateUserController import UpdateUserController
 from .LogoutController import LogoutController
+from .GetNewAccessTokenController import GetNewAccessTokenController

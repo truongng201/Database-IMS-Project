@@ -14,7 +14,7 @@ class GetAllCategoriesQuery:
         """
         
         result = self.db.execute_query(query)
-        
+        self.db.close_pool()
         if not result:
             return []
         

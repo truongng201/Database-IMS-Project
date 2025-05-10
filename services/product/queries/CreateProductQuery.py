@@ -21,4 +21,5 @@ class CreateProductQuery:
             params.location_id
         )
         res = self.db.execute_query(query, params)
+        self.db.close_pool()
         return True if res is not None else False

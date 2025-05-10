@@ -23,7 +23,7 @@ class GetAllProductQuery:
         """
         
         result = self.db.execute_query(query, params)
-        
+        self.db.close_pool()
         if not result:
             return []
         
