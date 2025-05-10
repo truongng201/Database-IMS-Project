@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from shared_config import StandardResponse, standard_response
 from shared_utils import login_required
 from controllers import *
-from models import LoginModel, RegisterModel, TokensModel
+from models import LoginModel, RegisterModel, TokensModel, UpdateUserModel
 
 router = APIRouter()
 
@@ -17,7 +17,7 @@ def login(payload: LoginModel, request: Request) -> TokensModel:
 
 @router.get("/get-user-detail", response_model=StandardResponse)
 @standard_response
-def get_user_detail(user_id: dict = Depends(login_required)):
+def get_user_detail(user_id: int = Depends(login_required)):
     controller = GetUserDetailController()
     response = controller.execute(user_id)
     return response
@@ -41,13 +41,15 @@ def get_all_roles():
 
 @router.post("/update-user-info", response_model=StandardResponse)
 @standard_response
-def update_user_info(user: dict):
+def update_user_info(updated_user: UpdateUserModel, user_id: int = Depends(login_required)):
+    controller = UpdateUserController()
+    controller.execute(updated_user, user_id)
     return {}
 
 
 @router.post("/logout", response_model=StandardResponse)
 @standard_response
-def logout(user_id: dict = Depends(login_required)):
+def logout(user_id: int = Depends(login_required)):
     return {}
 
 

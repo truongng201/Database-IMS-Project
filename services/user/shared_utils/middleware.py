@@ -12,12 +12,14 @@ def login_required(token: str = Security(api_key_header)):
     Middleware to check if the user is logged in.
     """
     if not token:
+        logger.error("No token provided")
         raise UnauthorizedException("You are not authenticated")
     
     try:
         user_data = verify_token(token)
         user_id = user_data.get("user_id")
         if not user_id:
+            logger.error("User ID not found in token")
             raise UnauthorizedException("You are not authenticated")
         return user_id
     except Exception as e:
