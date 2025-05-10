@@ -19,7 +19,6 @@ class RegisterModel(BaseModel):
     username: str = Field(..., title="Username", description="User's username")
     full_name: str = Field(..., title="Full Name", description="User's full name")
     role_id: int = Field(..., title="Role ID", description="User's role ID")
-    is_active: bool = Field(True, title="Is Active", description="Indicates if the user is active")
     
     class Config:
         orm_mode = True

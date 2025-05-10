@@ -1,1 +1,2 @@
 from .LoginController import LoginController
+from .RegisterController import RegisterController
