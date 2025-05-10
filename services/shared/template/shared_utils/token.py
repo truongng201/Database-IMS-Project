@@ -8,7 +8,7 @@ from shared_config.custom_exception import UnauthorizedException
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your_secret_key")
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
-def sign_jwt(payload, expires_in: int = 3600) -> str:
+def sign_token(payload, expires_in: int = 3600) -> str:
     """
     Sign a JWT token with the given payload.
     :param payload: The payload to include in the token.
@@ -25,7 +25,7 @@ def sign_jwt(payload, expires_in: int = 3600) -> str:
         raise Exception("Something went wrong")
     
     
-def verify_jwt(token: str):
+def verify_token(token: str):
     """
     Verify a JWT token and return the payload.
     :param token: The JWT token to verify.
@@ -36,10 +36,10 @@ def verify_jwt(token: str):
         return payload
     except jwt.ExpiredSignatureError:
         logger.error("Token has expired")
-        raise UnauthorizedException("You are not authorized to access this resource")
+        raise UnauthorizedException("Token has expired")
     except jwt.InvalidTokenError:
         logger.error("Invalid token")
-        raise UnauthorizedException("You are not authorized to access this resource")
+        raise UnauthorizedException("You are not authenticated")
     except Exception as e:
         logger.error(f"Error verifying JWT: {e}")
         raise Exception("Something went wrong")

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from shared_config import StandardResponse, standard_response
+from shared_utils import login_required
 from controllers import *
 from models import LoginModel, RegisterModel, TokensModel
 
@@ -16,7 +17,7 @@ def login(payload: LoginModel, request: Request) -> TokensModel:
 
 @router.get("/get-user-detail", response_model=StandardResponse)
 @standard_response
-def get_user_detail(user_id: int):
+def get_user_detail(user_id: dict = Depends(login_required)):
     return {}
 
 

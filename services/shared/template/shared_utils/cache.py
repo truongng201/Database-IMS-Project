@@ -1,6 +1,7 @@
 import redis
 from .logger import logger
 import os
+import json
 
 class Cache:
     def __init__(self):
@@ -65,4 +66,38 @@ class Cache:
         except Exception as e:
             logger.error(f"Error deleting key '{key}': {e}")
             raise Exception("Something went wrong")
+        
+    def set_json(self, key, value, ttl=-1):
+        """
+        Set a JSON value in the cache with an optional TTL (time to live).
+        :param key: The key to set.
+        :param value: The JSON value to set.
+        :param ttl: Time to live in seconds. Default is -1 (no expiration).
+        """
+        try:
+            if self.client:
+                json_value = json.dumps(value)
+                if ttl > 0:
+                    self.client.set(key, json_value, ex=ttl)
+                else:
+                    self.client.set(key, json_value)
+        except Exception as e:
+            logger.error(f"Error setting JSON key '{key}': {e}")
+            raise Exception("Something went wrong")
+        
+    def get_json(self, key):
+        """
+        Get a JSON value from the cache by key.
+        :param key: The key to retrieve.
+        :return: The JSON value associated with the key, or None if not found.
+        """
+        try:
+            if self.client:
+                json_value = self.client.get(key)
+                if json_value:
+                    return json.loads(json_value)
+                return None
+        except Exception as e:
+            logger.error(f"Error getting JSON key '{key}': {e}")
+            return None
         

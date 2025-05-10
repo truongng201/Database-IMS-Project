@@ -6,14 +6,13 @@ import string
 from queries import LoginQuery
 from models import LoginModel, TokensModel, LoginLogModel
 from shared_config.custom_exception import InvalidDataException
-from shared_utils import sign_jwt, Cache, logger
+from shared_utils import sign_token, logger
 
 EXPIRATION_TIME = 60 * 60 * 24 * 7  # 7 days
 
 class LoginController:
     def __init__(self):
         self.query = LoginQuery()
-        self.cache = Cache()
         
     def __verify_password(self, password: str, hashed_password: str) -> bool:
         # Verify the password using bcrypt
@@ -71,13 +70,8 @@ class LoginController:
         # Generate JWT token
         jwt_payload ={
             "user_id": user.get("user_id"),
-            "email": user.get("email"),
-            "username": user.get("username"),
         }
-        access_token = sign_jwt(jwt_payload, expires_in=EXPIRATION_TIME)
-        
-        # Store the access token in the cache
-        self.cache.set(access_token, refresh_token)
+        access_token = sign_token(jwt_payload, expires_in=EXPIRATION_TIME)
         
 
         logger.info(f"Login successful for email: {payload.email}")
