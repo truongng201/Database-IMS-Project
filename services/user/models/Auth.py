@@ -49,7 +49,7 @@ class LogoutModel(BaseModel):
         
 class TokensModel(BaseModel):
     access_token: str = Field(..., title="Access Token", description="JWT access token")
-    refresh_token: str = Field(..., title="Refresh Token", description="JWT refresh token")
+    refresh_token: str = Field(..., title="Refresh Token", description="Refresh token")
     
     class Config:
         orm_mode = False
@@ -65,7 +65,6 @@ class LoginLogModel(BaseModel):
     refresh_token: str = Field(..., title="Refresh Token", description="Refresh token for the user session")
     ip_address: str = Field(..., title="IP Address", description="IP address of the user")
     user_agent: str = Field(..., title="User Agent", description="User agent of the user's device")
-    login_time: str = Field(..., title="Login Time", description="Timestamp of the login")
     
     class Config:
         orm_mode = False
@@ -75,6 +74,5 @@ class LoginLogModel(BaseModel):
                 "refresh_token": "string",
                 "ip_address": "192.168.1.1",
                 "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-                "login_time": "2023-10-01T12:00:00Z"
             }
         }

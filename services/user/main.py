@@ -28,7 +28,6 @@ def health_check():
     db.close_pool()
     # Check cache connection
     Cache()
-
     return f"{SERVICE_NAME} service is running with version {APP_VERSION}"
 
 @app.exception_handler(CustomException)

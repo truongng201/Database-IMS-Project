@@ -1,16 +1,16 @@
 from fastapi import APIRouter
 from shared_config import StandardResponse, standard_response
+from controllers import *
+from models import *
 
 router = APIRouter()
 
 @router.post("/login", response_model=StandardResponse)
 @standard_response
-def login():
-    return {
-        "access_token": "string",
-        "refresh_token": "string",
-    }
-
+def login(payload: LoginModel) -> TokensModel:
+    controller = LoginController()
+    response = controller.execute(payload)
+    return response
 @router.get("/get-user-detail", response_model=StandardResponse)
 @standard_response
 def get_user_detail(user_id: int):
