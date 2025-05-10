@@ -18,7 +18,9 @@ def login(payload: LoginModel, request: Request) -> TokensModel:
 @router.get("/get-user-detail", response_model=StandardResponse)
 @standard_response
 def get_user_detail(user_id: dict = Depends(login_required)):
-    return {}
+    controller = GetUserDetailController()
+    response = controller.execute(user_id)
+    return response
 
 
 @router.post("/register", response_model=StandardResponse)
