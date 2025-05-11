@@ -1,43 +1,71 @@
-version: "3.2"
+version: "3.8"
 
 services:
-  sqldatabase: # default port 3306
+  sqldatabase:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
       MYSQL_DATABASE: db
       MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_PASSWORD_FILE: /run/secrets/mysql_user_password
     volumes:
       - /mnt/mysql-data:/var/lib/mysql
     networks:
       - proxy_net
     deploy:
       replicas: 1
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+      placement:
+        constraints: [node.role == manager]
+    secrets:
+      - mysql_root_password
+      - mysql_user_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
-  cache: # default port 6379
+  cache:
     image: redis:7.2-alpine
     restart: unless-stopped
-    volumes:
-      - /mnt/redis-data:/data
     command: >
       redis-server
       --appendonly yes
-      --requirepass securepassword
+      --requirepass "$$(cat /run/secrets/redis_password)"
+    volumes:
+      - /mnt/redis-data:/data
     networks:
       - proxy_net
     deploy:
       replicas: 1
-      
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+      placement:
+        constraints: [node.role == worker]
+    secrets:
+      - redis_password
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   minio:
     image: minio/minio:latest
     restart: unless-stopped
     environment:
-      MINIO_ACCESS_KEY: accesskey
-      MINIO_SECRET_KEY: secretkey
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_ROOT_USER_FILE: /run/secrets/minio_user
+      MINIO_ROOT_PASSWORD_FILE: /run/secrets/minio_password
     command: server /data --console-address ":9001"
     volumes:
       - /mnt/minio-data:/data
@@ -45,9 +73,7 @@ services:
       - proxy_net
     deploy:
       replicas: 1
-
-networks:
-  proxy_net:
-    external: true
-
-
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 
