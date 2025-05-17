@@ -27,21 +27,15 @@ class UserModel(BaseModel):
         
         
 class UpdateUserModel(BaseModel):
-    username: str = Field(..., title="Username", description="Username of the user")
-    role_id: int = Field(..., title="Role ID", description="Unique identifier for the role")
-    full_name: str = Field(..., title="Full Name", description="Full name of the user")
-    is_active: bool = Field(True, title="Is Active", description="Indicates if the user is active")
+    username: str = Field(None, title="Username", description="Username of the user")
+    image_url: str = Field(None, title="Image URL", description="URL of the user's profile image")
 
     class Config:
         orm_mode = True
         schema_extra = {
             "example": {
-                "user_id": 1,
                 "username": "johndoe",
-                "email": "abc@example.com",
-                "role_id": 1,
-                "full_name": "John Doe",
-                "is_active": True
+                "image_url": "https://example.com/image.jpg",
             }
         }
     

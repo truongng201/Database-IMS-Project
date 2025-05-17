@@ -33,9 +33,9 @@ def register(payload: RegisterModel):
 
 @router.post("/update-user-info", response_model=StandardResponse)
 @standard_response
-def update_user_info(updated_user: UpdateUserModel, user_id: int = Depends(login_required)):
+def update_user_info(updated_user: UpdateUserModel, user_info: int = Depends(login_required)):
     controller = UpdateUserController()
-    controller.execute(updated_user, user_id)
+    controller.execute(updated_user, user_info)
     return {}
 
 
