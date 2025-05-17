@@ -41,10 +41,10 @@ def update_user_info(updated_user: UpdateUserModel, user_id: int = Depends(login
 
 @router.post("/logout", response_model=StandardResponse)
 @standard_response
-def logout(refresh_token: str, request: Request, user_id: int = Depends(login_required)):
+def logout(refresh_token: str, request: Request, user_info: dict = Depends(login_required)):
     access_token = request.headers.get("Authorization")
     controller = LogoutController()
-    controller.execute(user_id, refresh_token, access_token)
+    controller.execute(user_info, refresh_token, access_token)
     return {}
 
 
