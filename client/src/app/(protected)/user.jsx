@@ -1,6 +1,5 @@
 'use client';
 import { Button } from "@/components/ui/button";
-// import { auth, signOut } from '@/lib/auth';
 import Image from "next/image";
 import {
   DropdownMenu,
