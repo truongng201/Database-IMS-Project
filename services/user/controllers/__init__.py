@@ -4,3 +4,6 @@ from .GetUserDetailController import GetUserDetailController
 from .UpdateUserController import UpdateUserController
 from .LogoutController import LogoutController
 from .GetNewAccessTokenController import GetNewAccessTokenController
+from .ActivateUserController import ActivateUserController
+from .GetAllUsersController import GetAllUsersController
+from .GetAllWarehousesController import GetAllWarehousesController

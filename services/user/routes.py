@@ -55,16 +55,24 @@ def get_new_access_token(refresh_token: str):
     response = controller.execute(refresh_token)
     return response
 
-# @router.post("/activate-user", response_model=StandardResponse)
-# @standard_response
-# def activate_user(user_id: int, activation_code: str):
-#     controller = ActivateUserController()
-#     controller.execute(user_id, activation_code)
-#     return {}
+@router.post("/activate-user", response_model=StandardResponse)
+@standard_response
+def activate_user(warehouse_id: int, user_id: int, user_info: dict = Depends(login_required)):
+    controller = ActivateUserController()
+    controller.execute(warehouse_id, user_id, user_info)
+    return {}
 
-# @router.post("/assign-warehouse", response_model=StandardResponse)
-# @standard_response
-# def assign_warehouse(user_id: int, warehouse_id: int, user_id_from_token: int = Depends(login_required)):
-#     controller = AssignWarehouseController()
-#     controller.execute(user_id, warehouse_id, user_id_from_token)
-#     return {}
+@router.get("/get-all-users", response_model=StandardResponse)
+@standard_response
+def get_all_users(user_info: dict = Depends(login_required)):
+    controller = GetAllUsersController()
+    response = controller.execute(user_info)
+    return response
+
+
+@router.get("/get-all-warehouses", response_model=StandardResponse)
+@standard_response
+def get_all_warehouses(user_info: dict = Depends(login_required)):
+    controller = GetAllWarehousesController()
+    response = controller.execute(user_info)
+    return response
