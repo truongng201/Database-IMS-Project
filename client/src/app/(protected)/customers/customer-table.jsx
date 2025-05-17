@@ -15,15 +15,14 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Product } from './product';
-// import { SelectProduct } from '@/lib/db';
+import { Customer } from './customer';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function ProductsTable({products, offset, totalProducts}) {
+export function CustomersTable({customers, offset, totalCustomers}) {
   let router = useRouter();
-  let productsPerPage = 5;
+  let customersPerPage = 5;
 
   function prevPage() {
     console.log('prevPage');
@@ -36,9 +35,9 @@ export function ProductsTable({products, offset, totalProducts}) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Products</CardTitle>
+        <CardTitle>Customers</CardTitle>
         <CardDescription>
-          Manage your products and their details.
+          View all customers and their orders.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -55,7 +54,7 @@ export function ProductsTable({products, offset, totalProducts}) {
                 Category
               </TableHead>
               <TableHead className="hidden md:table-cell">
-                Total
+                Total sales
               </TableHead>
               <TableHead className="hidden md:table-cell">Supplier</TableHead>
               <TableHead className="hidden md:table-cell">Location</TableHead>
@@ -65,17 +64,17 @@ export function ProductsTable({products, offset, totalProducts}) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
-              <Product
-                key={product.id}
-                product={product}
-                onClick={() => router.push(`/products/${product.id}`)}
+            {customers.map((customer) => (
+              <Customer
+                key={customer.id}
+                customer={customer}
+                onClick={() => router.push(`/customers/${customer.id}`)}
               />
             ))}
-            {products.length === 0 && (
+            {customers.length === 0 && (
               <TableRow>
                 <TableHead colSpan={9} className="text-center">
-                  No products found.
+                  No customers found.
                 </TableHead>
               </TableRow>
             )}
@@ -88,9 +87,9 @@ export function ProductsTable({products, offset, totalProducts}) {
           <div className="text-xs text-muted-foreground">
             Showing{' '}
             <strong>
-              {Math.max(0, Math.min(offset - productsPerPage, totalProducts) + 1)}-{offset}
+              {Math.max(0, Math.min(offset - customersPerPage, totalCustomers) + 1)}-{offset}
             </strong>{' '}
-            of <strong>{totalProducts}</strong> products
+            of <strong>{totalCustomers}</strong> customers
           </div>
           <div className="flex">
             <Button
@@ -98,7 +97,7 @@ export function ProductsTable({products, offset, totalProducts}) {
               variant="ghost"
               size="sm"
               type="submit"
-              disabled={offset === productsPerPage}
+              disabled={offset === customersPerPage}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Prev
@@ -108,7 +107,7 @@ export function ProductsTable({products, offset, totalProducts}) {
               variant="ghost"
               size="sm"
               type="submit"
-              disabled={offset + productsPerPage > totalProducts}
+              disabled={offset + customersPerPage > totalCustomers}
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />

@@ -11,24 +11,24 @@ import {
 import { MoreHorizontal } from 'lucide-react';
 import { TableCell, TableRow } from '@/components/ui/table';
 
-export function Product({ product }) {
+export function Customer({ customer }) {
   return (
     <TableRow>
       <TableCell className="hidden sm:table-cell">
         <Image
-          alt="Product image"
+          alt="customer image"
           className="aspect-square rounded-md object-cover"
           height="64"
-          src={product.imageUrl}
+          src={customer.imageUrl}
           width="64"
         />
       </TableCell>
-      <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell>{product.descrtiption} </TableCell>
-      <TableCell className="hidden md:table-cell">{`$${product.price}`}</TableCell>
-      <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
+      <TableCell className="font-medium">{customer.name}</TableCell>
+      <TableCell>{customer.descrtiption} </TableCell>
+      <TableCell className="hidden md:table-cell">{`$${customer.price}`}</TableCell>
+      <TableCell className="hidden md:table-cell">{customer.stock}</TableCell>
       <TableCell className="hidden md:table-cell">
-        {product.availableAt.toLocaleDateString("en-US")}
+        {customer.availableAt.toLocaleDateString("en-US")}
       </TableCell>
       <TableCell>
         <DropdownMenu>
