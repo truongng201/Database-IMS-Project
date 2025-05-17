@@ -53,7 +53,7 @@ class LoginController:
         # Check if the user is active
         if not user.get("is_active"):
             self.query.close()
-            raise InvalidDataException("User is not active")
+            raise InvalidDataException("Account is inactive. Please contact admin.")
         
         # Check if the user is staff but was not assigned to a warehouse
         if user.get("role_name") == "staff" and not user.get("warehouse_id"):
