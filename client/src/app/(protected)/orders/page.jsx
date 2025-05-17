@@ -9,10 +9,10 @@ export default async function ProductsPage() {
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="draft">Draft</TabsTrigger>
+          <TabsTrigger value="active">Pending</TabsTrigger>
+          <TabsTrigger value="draft">Completed</TabsTrigger>
           <TabsTrigger value="archived" className="hidden sm:flex">
-            Archived
+            Cancelled
           </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">

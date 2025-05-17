@@ -1,9 +1,9 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { File, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ProductsTable } from './products-table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { File, PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SupplierTable } from "./supplier-table";
 
-export default async function ProductsPage() {
+export default async function SuppliersPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -17,17 +17,13 @@ export default async function ProductsPage() {
           <Button size="sm" className="h-8 gap-1">
             <PlusCircle className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Add Product
+              Add Supplier
             </span>
           </Button>
         </div>
       </div>
       <TabsContent value="all">
-        <ProductsTable
-          products={[]}
-          offset={0}
-          totalProducts={0}
-        />
+        <SupplierTable suppliers={[]} offset={0} totalSuppliers={0} />
       </TabsContent>
     </Tabs>
   );
