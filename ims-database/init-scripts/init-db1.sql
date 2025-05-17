@@ -3,18 +3,17 @@ DROP TABLE IF EXISTS product_order_items;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS inventory;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS suppliers;
-DROP TABLE IF EXISTS locations;
+DROP TABLE IF EXISTS warehouses;
 DROP TABLE IF EXISTS customers;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS login_logs;
 
 -- CORE TABLES
 
-CREATE TABLE locations (
-    location_id INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE warehouses (
+    warehouse_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     address TEXT,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -28,11 +27,11 @@ CREATE TABLE users (
     password_hash VARCHAR(255) NOT NULL,
     role_name ENUM('admin', 'staff') NOT NULL DEFAULT 'staff',
     image_url TEXT,
-    location_id INT,
+    warehouse_id INT,
     is_active BOOLEAN DEFAULT FALSE,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_users_location FOREIGN KEY (location_id) REFERENCES locations(location_id)
+    CONSTRAINT fk_users_warehouse FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id)
 );
 
 CREATE TABLE login_logs (
@@ -65,32 +64,22 @@ CREATE TABLE categories (
     updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- INVENTORY SYSTEM
-
-CREATE TABLE inventory (
-    inventory_id INT AUTO_INCREMENT PRIMARY KEY,
-    location_id INT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    quantity INT DEFAULT 0, -- Total items in this inventory (optional)
-    created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_inventory_location FOREIGN KEY (location_id) REFERENCES locations(location_id)
-);
+-- PRODUCT SYSTEM
 
 CREATE TABLE products (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     price DECIMAL(10, 2) NOT NULL,
+    quantity INT NOT NULL DEFAULT 0, -- Tracks total quantity at the warehouse
     supplier_id INT NOT NULL,
-    inventory_id INT NOT NULL,
+    warehouse_id INT NOT NULL,
     category_id INT NOT NULL,
     image_url TEXT,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_products_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
-    CONSTRAINT fk_products_inventory FOREIGN KEY (inventory_id) REFERENCES inventory(inventory_id),
+    CONSTRAINT fk_products_warehouse FOREIGN KEY (warehouse_id) REFERENCES warehouses(warehouse_id),
     CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(category_id)
 );
 
