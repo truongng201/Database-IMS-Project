@@ -113,8 +113,7 @@ INSERT INTO warehouses (name, address) VALUES ('Ronniehaven', '0932 Keith Bridge
 INSERT INTO warehouses (name, address) VALUES ('Port Coreyland', '56250 Kyle Mountains');
 INSERT INTO warehouses (name, address) VALUES ('Barnesport', '2506 Valerie Flat Suite 135');
 INSERT INTO warehouses (name, address) VALUES ('North Mitchellmouth', '6565 Maldonado Parks Apt. 673');
-INSERT INTO users (username, email, password_hash, role_name, warehouse_id, is_active, image_url) VALUES ('admin', 'admin@admin.com', '21232f297a57a5a743894a0e4a801fc3', 'admin', 1, TRUE, 'https://api.dicebear.com/9.x/identicon/svg?seed=admin');
-INSERT INTO users (username, email, password_hash, role_name, warehouse_id, is_active, image_url) VALUES ('user1', 'user1@user.com', 'e6b84c1a1799a801a69781ed37986eb1', 'staff', 1, FALSE, 'https://api.dicebear.com/9.x/identicon/svg?seed=user1');
+INSERT INTO users (username, email, password_hash, role_name, warehouse_id, is_active, image_url) VALUES ('admin', 'admin@admin.com', '$2b$12$MhPoat8o/LgpoL2spnBagetd5YPqa1HwP6dzRpGg4O1PQ8mwMLQSy', 'admin', 1, TRUE, 'https://api.dicebear.com/9.x/identicon/svg?seed=admin');
 INSERT INTO customers (name, email, phone, address) VALUES ('Victoria Vasquez', 'plynch@example.com', '001-720-419-7652x638', '082 John Square, Jonesfurt, LA 17035');
 INSERT INTO customers (name, email, phone, address) VALUES ('Jeffrey Chavez', 'michael59@example.org', '876.766.3170x17560', '662 Herrera Throughway Suite 055, Allisonburgh, RI 25339');
 INSERT INTO customers (name, email, phone, address) VALUES ('Natalie Thompson', 'reginaldphelps@example.org', '(668)861-4323', '7276 Molina Bypass, Fieldsmouth, WI 48802');

@@ -1,12 +1,14 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { File, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-// import { ProductsTable } from './products-table';
+"use client";
 
-export default async function ProductsPage() {
+import { Tabs } from '@/components/ui/tabs';
+import withAuth from '@/hooks/withAuth';
+
+function ProfilePage() {
   return (
     <Tabs defaultValue="all">
       Your information is being loaded...
     </Tabs>
   );
 }
+
+export default withAuth(ProfilePage);

@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=StandardResponse)
 @standard_response
-def login(payload: LoginModel, request: Request) -> TokensModel:
+def login(payload: LoginModel, request: Request):
     client_ip = request.client.host
     user_agent = request.headers.get("User-Agent")
     controller = LoginController()
@@ -17,9 +17,9 @@ def login(payload: LoginModel, request: Request) -> TokensModel:
 
 @router.get("/get-user-detail", response_model=StandardResponse)
 @standard_response
-def get_user_detail(user_id: int = Depends(login_required)):
+def get_user_detail(user_info: dict = Depends(login_required)):
     controller = GetUserDetailController()
-    response = controller.execute(user_id)
+    response = controller.execute(user_info)
     return response
 
 
@@ -31,28 +31,20 @@ def register(payload: RegisterModel):
     return {}
 
 
-@router.get("/get-all-roles", response_model=StandardResponse)
-@standard_response
-def get_all_roles():
-    controller = GetAllRolesController()
-    response = controller.execute()
-    return response
-
-
 @router.post("/update-user-info", response_model=StandardResponse)
 @standard_response
-def update_user_info(updated_user: UpdateUserModel, user_id: int = Depends(login_required)):
+def update_user_info(updated_user: UpdateUserModel, user_info: int = Depends(login_required)):
     controller = UpdateUserController()
-    controller.execute(updated_user, user_id)
+    controller.execute(updated_user, user_info)
     return {}
 
 
 @router.post("/logout", response_model=StandardResponse)
 @standard_response
-def logout(refresh_token: str, request: Request, user_id: int = Depends(login_required)):
+def logout(refresh_token: str, request: Request, user_info: dict = Depends(login_required)):
     access_token = request.headers.get("Authorization")
     controller = LogoutController()
-    controller.execute(user_id, refresh_token, access_token)
+    controller.execute(user_info, refresh_token, access_token)
     return {}
 
 
@@ -61,4 +53,26 @@ def logout(refresh_token: str, request: Request, user_id: int = Depends(login_re
 def get_new_access_token(refresh_token: str):
     controller = GetNewAccessTokenController()
     response = controller.execute(refresh_token)
+    return response
+
+@router.post("/activate-user", response_model=StandardResponse)
+@standard_response
+def activate_user(warehouse_id: int, user_id: int, user_info: dict = Depends(login_required)):
+    controller = ActivateUserController()
+    controller.execute(warehouse_id, user_id, user_info)
+    return {}
+
+@router.get("/get-all-users", response_model=StandardResponse)
+@standard_response
+def get_all_users(user_info: dict = Depends(login_required)):
+    controller = GetAllUsersController()
+    response = controller.execute(user_info)
+    return response
+
+
+@router.get("/get-all-warehouses", response_model=StandardResponse)
+@standard_response
+def get_all_warehouses(user_info: dict = Depends(login_required)):
+    controller = GetAllWarehousesController()
+    response = controller.execute(user_info)
     return response

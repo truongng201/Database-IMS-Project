@@ -5,20 +5,6 @@ class RegisterQuery:
     def __init__(self):
         self.db = Database()
         
-        
-    def check_role_exists(self, role_id: int):
-        query = '''SELECT 
-            role_id, 
-            role_name 
-            FROM roles 
-            WHERE role_id = %s
-        '''
-        params = (role_id,)
-        result = self.db.execute_query(query, params)
-        if not result:
-            return False
-        return True
-        
     
     def check_email_exists(self, email: str):
         query = '''SELECT 
@@ -38,20 +24,21 @@ class RegisterQuery:
     def create_user(self, payload: RegisterModel):
         query = """
             INSERT INTO
-                users (email, password_hash, username, full_name, role_id, is_active)
-            VALUES (%s, %s, %s, %s, %s, %s)
+                users (email, password_hash, username, image_url)
+            VALUES (%s, %s, %s, %s)
         """
-
+        # dicebear 
+        random_image_url = "https://api.dicebear.com/9.x/identicon/svg?seed=" + payload.username
         params = (
             payload.email,
             payload.password,
             payload.username,
-            payload.full_name,
-            payload.role_id,
-            True
+            random_image_url
         )
         result = self.db.execute_query(query, params)
-        self.db.close_pool()
         if result is None:
             return False
         return True
+    
+    def close(self):
+        self.db.close_pool()

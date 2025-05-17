@@ -22,11 +22,10 @@ def login_required(token: str = Security(api_key_header)):
     
     try:
         user_data = verify_token(token)
-        user_id = user_data.get("user_id")
-        if not user_id:
-            logger.error("User ID not found in token")
+        if not user_data or not isinstance(user_data, dict) or "user_id" not in user_data:
+            logger.error("Invalid token data")
             raise UnauthorizedException("You are not authenticated")
-        return user_id
+        return user_data
     except Exception as e:
         logger.error(f"Error verifying token: {e}")
         raise UnauthorizedException("You are not authenticated")

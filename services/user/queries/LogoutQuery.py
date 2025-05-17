@@ -24,7 +24,9 @@ class LogoutQuery:
         """
         params = (user_id, refresh_token)
         res = self.db.execute_query(query, params)
-        self.db.close_pool()
         if res is None:
             return False
         return True
+    
+    def close(self):
+        self.db.close_pool()

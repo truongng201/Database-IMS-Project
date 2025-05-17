@@ -1,18 +1,20 @@
+"use client";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { File, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-// import { ProductsTable } from './products-table';
+import withAuth from '@/hooks/withAuth';
 
-export default async function ProductsPage() {
+function OrdersPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="draft">Draft</TabsTrigger>
+          <TabsTrigger value="active">Pending</TabsTrigger>
+          <TabsTrigger value="draft">Completed</TabsTrigger>
           <TabsTrigger value="archived" className="hidden sm:flex">
-            Archived
+            Cancelled
           </TabsTrigger>
         </TabsList>
         <div className="ml-auto flex items-center gap-2">
@@ -31,12 +33,10 @@ export default async function ProductsPage() {
         </div>
       </div>
       <TabsContent value="all">
-        {/* <ProductsTable
-          products={[]}
-          offset={0}
-          totalProducts={0}
-        /> */}
+        
       </TabsContent>
     </Tabs>
   );
 }
+
+export default withAuth(OrdersPage);
