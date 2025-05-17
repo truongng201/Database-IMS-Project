@@ -9,12 +9,15 @@ class GetNewAccessTokenController:
        
     def execute(self, refresh_token: str):
         if not refresh_token:
+            self.query.close()
             raise InvalidDataException("Invalid data provided")
         
         if not isinstance(refresh_token, str):
+            self.query.close()
             raise InvalidDataException("Invalid data provided")
         
         res = self.query.execute(refresh_token)
+        self.query.close()
         if not res:
             raise InvalidDataException("Invalid data provided")
         
@@ -31,3 +34,5 @@ class GetNewAccessTokenController:
             "refresh_token": refresh_token
         }
         
+    def close(self):
+        self.query.close()

@@ -18,3 +18,6 @@ class GetNewAccessTokenQuery:
         return {
             "user_id": res[0][0]
         }
+        
+    def close(self):
+        self.db.close_pool()
