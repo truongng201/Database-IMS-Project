@@ -40,11 +40,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # - name: Set up services config
-      #   run: |
-      #     cd services/product/config
-      #     echo "${{ secrets.SERVER_CONFIG_FILE }}" > config.yml
-
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -54,7 +49,10 @@ jobs:
       - name: Build Docker image
         run: |
           cd client/
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-client:latest -f Dockerfile.prod .
+          docker build \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}-client:latest \
+            --build-arg NEXT_PUBLIC_BACKEND_URL=${{ secrets.NEXT_PUBLIC_BACKEND_URL }} \
+            -f Dockerfile.prod .
 
       - name: Push Docker image to Docker Hub
         run: docker push ${{ secrets.DOCKERHUB_USERNAME}}/${{ secrets.DOCKERHUB_REPOSITORY}}-client:latest
