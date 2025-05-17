@@ -1,23 +1,78 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
+function LoginPage() {
   const [pending, setPending] = useState(false);
+  const [showAlert, setShowAlert] = useState(false);
   const [error, setError] = useState(null);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    const accessToken = localStorage.getItem("access_token");
+    const refreshToken = localStorage.getItem("refresh_token");
+    const user = localStorage.getItem("user");
+
+    if (accessToken && refreshToken && user) {
+      router.replace("/"); // 👈 redirect to homepage
+    }
+  }, []);
+
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    console.log("email", email);
-    console.log("password", password);
+  event.preventDefault();
+  setPending(true);
+
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.log(errorData);
+    setError(errorData.message);
+    setShowAlert(true);
+
+    // Hide alert after 5 seconds
+    setTimeout(() => {
+      setShowAlert(false);
+    }, 5000);
+
+    setPending(false);
+    return;
   }
+
+  // Success case
+  const data = await response.json();
+  localStorage.setItem("access_token", data?.data?.access_token);
+  localStorage.setItem("refresh_token", data?.data?.refresh_token);
+  localStorage.setItem("user", JSON.stringify(data?.data?.user));
+  setPending(false);
+  setError(null);
+  setShowAlert(false);
+  router.push("/");
+};
+
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
+      {showAlert && (
+        <div
+          className="fixed top-4 right-4 z-50 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-lg"
+          role="alert"
+        >
+          <span className="font-medium">Login error!</span> {error}
+        </div>
+      )}
       <div className="z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 shadow-xl">
         <div className="flex flex-col items-center justify-center space-y-3 border-b border-gray-200 bg-white px-4 py-6 pt-8 text-center sm:px-16">
           <h3 className="text-xl font-semibold">Sign In</h3>
@@ -25,7 +80,10 @@ export default function LoginPage() {
             Use your email and password to sign in
           </p>
         </div>
-        <form className="flex flex-col space-y-4 bg-gray-50 px-4 py-8 sm:px-16" onSubmit={handleSubmit}>
+        <form
+          className="flex flex-col space-y-4 bg-gray-50 px-4 py-8 sm:px-16"
+          onSubmit={handleSubmit}
+        >
           <div>
             <label
               htmlFor="email"
@@ -106,3 +164,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+export default LoginPage;

@@ -10,7 +10,7 @@ import {
   ShoppingCart,
   Contact,
   Users,
-  Cable
+  Cable,
 } from "lucide-react";
 
 import {
@@ -33,6 +33,7 @@ import { NavItem } from "./nav-item";
 import { SearchInput } from "./search";
 import { User } from "./user";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function DashboardLayout({ children }) {
   return (
@@ -56,6 +57,17 @@ export default function DashboardLayout({ children }) {
 }
 
 function DesktopNav() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) setUser(JSON.parse(stored));
+    } catch (err) {
+      console.error("Error parsing user:", err);
+    }
+  }, []);
+
   return (
     <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
       <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
@@ -70,25 +82,26 @@ function DesktopNav() {
         <NavItem href="/" label="Dashboard">
           <Home className="h-5 w-5" />
         </NavItem>
-
         <NavItem href="/orders" label="Orders">
           <ShoppingCart className="h-5 w-5" />
         </NavItem>
-
         <NavItem href="/products" label="Products">
           <Package className="h-5 w-5" />
         </NavItem>
         <NavItem href="/supplier" label="Suppliers">
           <Cable className="h-5 w-5" />
         </NavItem>
-
         <NavItem href="/customers" label="Customers">
           <Contact className="h-5 w-5" />
         </NavItem>
-        <NavItem href="/users" label="Users">
-          <Users className="h-5 w-5" />
-        </NavItem>
+
+        {user?.role_name === "admin" && (
+          <NavItem href="/users" label="Users">
+            <Users className="h-5 w-5" />
+          </NavItem>
+        )}
       </nav>
+
       <nav className="mt-auto flex flex-col items-center gap-4 px-2 sm:py-5">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -108,6 +121,17 @@ function DesktopNav() {
 }
 
 function MobileNav() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("user");
+      if (stored) setUser(JSON.parse(stored));
+    } catch (err) {
+      console.error("Error parsing user:", err);
+    }
+  }, []);
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -124,41 +148,34 @@ function MobileNav() {
           >
             <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
           </Link>
-          <Link
-            href="/"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
+
+          <Link href="/" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
             <Home className="h-5 w-5" />
             Dashboard
           </Link>
-          <Link
-            href="/orders"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
+          <Link href="/orders" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
             <ShoppingCart className="h-5 w-5" />
             Orders
           </Link>
-          <Link
-            href="/products"
-            className="flex items-center gap-4 px-2.5 text-foreground"
-          >
+          <Link href="/products" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
             <Package className="h-5 w-5" />
             Products
           </Link>
-          <Link
-            href="/customers"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
+          <Link href="/supplier" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+            <Cable className="h-5 w-5" />
+            Suppliers
+          </Link>
+          <Link href="/customers" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
             <Contact className="h-5 w-5" />
             Customers
           </Link>
-          <Link
-            href="/users"
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <Users className="h-5 w-5" />
-            Users
-          </Link>
+
+          {user?.role_name === "admin" && (
+            <Link href="/users" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+              <Users className="h-5 w-5" />
+              Users
+            </Link>
+          )}
         </nav>
       </SheetContent>
     </Sheet>
@@ -167,6 +184,7 @@ function MobileNav() {
 
 function DashboardBreadcrumb() {
   const path = usePathname();
+
   if (path === "/") {
     return (
       <Breadcrumb className="hidden md:flex">
@@ -179,25 +197,25 @@ function DashboardBreadcrumb() {
         </BreadcrumbList>
       </Breadcrumb>
     );
-  } else {
-    // uppercase the first letter of the pathname and remove / for instance /orders -> Orders
-    const pathname = path.charAt(1).toUpperCase() + path.slice(2);
-    return (
-      <Breadcrumb className="hidden md:flex">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/">Dashboard</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href={path}>{pathname}</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    );
   }
+
+  const pathname = path.charAt(1).toUpperCase() + path.slice(2);
+
+  return (
+    <Breadcrumb className="hidden md:flex">
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/">Dashboard</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href={path}>{pathname}</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
 }

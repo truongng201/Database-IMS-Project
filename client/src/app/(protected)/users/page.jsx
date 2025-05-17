@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UsersTable } from './users-table';
+import withAuth from '@/hooks/withAuth';
 
 function UsersPage() {
   return (

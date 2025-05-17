@@ -1,4 +1,5 @@
-'use client';
+"use client";
+
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {
@@ -11,21 +12,66 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function User() {
   const router = useRouter();
-  const user = {
-    image: "/placeholder-user.jpg",
-    name: "John Doe",
-    email: "",
-  };
+  const [showAlert, setShowAlert] = useState(false);
+  const [error, setError] = useState(null);
 
-  const signOut = async () => {
+  const user =
+    typeof window !== "undefined"
+      ? JSON.parse(localStorage.getItem("user")) || null
+      : null;
+
+  const signOut = async (e) => {
+    e.preventDefault();
+
+    const access_token = localStorage.getItem("access_token");
+    const refresh_token = localStorage.getItem("refresh_token");
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/logout?refresh_token=${refresh_token}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${access_token}`,
+        },
+      }
+    );
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.log(errorData);
+      setError(errorData.message);
+      setShowAlert(true);
+
+      // Hide alert after 5 seconds
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 5000);
+
+      return;
+    }
+
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+
     router.push("/login");
   };
 
   return (
     <DropdownMenu>
+      {showAlert && (
+        <div
+          className="fixed top-4 right-4 z-50 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-lg"
+          role="alert"
+        >
+          <span className="font-medium">Logout error!</span> {error}
+        </div>
+      )}
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
@@ -47,13 +93,20 @@ export function User() {
         <DropdownMenuItem>
           <Link href="/profile">Profile</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem><Link href="https://github.com/truongng201/Database-IMS-Project">Support</Link></DropdownMenuItem>
+        <DropdownMenuItem>
+          <Link
+            href="https://github.com/truongng201/Database-IMS-Project"
+            target="_blank"
+          >
+            Support
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {user ? (
-          <DropdownMenuItem>
-            <form>
-              <button type="submit" onClick={signOut}>Sign Out</button>
-            </form>
+          <DropdownMenuItem asChild>
+            <button onClick={signOut} className="w-full text-left">
+              Sign Out
+            </button>
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem>

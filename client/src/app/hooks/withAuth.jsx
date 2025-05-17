@@ -1,35 +1,37 @@
 "use client";
 
-import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function withAuth(Component) {
   return function AuthenticatedComponent(props) {
     const [isAuthenticated, setIsAuthenticated] = useState(null);
-    const access_token = localStorage.getItem("access_token");
-    const refresh_token = localStorage.getItem("refresh_token");
-    const user = localStorage.getItem("user");
-
-    if (!access_token || !refresh_token || !user) {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
-    }
 
     useEffect(() => {
       async function validate() {
+        const access_token = localStorage.getItem("access_token");
+        const refresh_token = localStorage.getItem("refresh_token");
+        const user = localStorage.getItem("user");
+
+        if (!access_token || !refresh_token || !user) {
+          localStorage.clear();
+          window.location.href = "/login";
+          return;
+        }
+
         try {
-          const response = await fetch(
+          let token = access_token;
+
+          let response = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/get-user-detail`,
             {
               headers: {
-                Authorization: `Bearer ${access_token}`,
+                Authorization: `${token}`,
               },
             }
           );
 
           if (!response.ok) {
+            // Try to refresh token
             const refreshResponse = await fetch(
               `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/get-new-access-token`,
               {
@@ -47,22 +49,25 @@ export default function withAuth(Component) {
               await refreshResponse.json();
             localStorage.setItem("access_token", newAccessToken);
 
-            const retry = await fetch(
+            token = newAccessToken;
+
+            // Retry original request
+            response = await fetch(
               `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/get-user-detail`,
               {
                 headers: {
-                  Authorization: `Bearer ${newAccessToken}`,
+                  Authorization: `${token}`,
                 },
               }
             );
 
-            if (!retry.ok) throw new Error("Retry failed");
+            if (!response.ok) throw new Error("Retry failed");
           }
 
           setIsAuthenticated(true);
         } catch (err) {
-          localStorage.clear();
           console.error("Authentication error:", err);
+          localStorage.clear();
           window.location.href = "/login";
         }
       }
@@ -70,8 +75,32 @@ export default function withAuth(Component) {
       validate();
     }, []);
 
+    // 🔄 Loading screen while checking auth
     if (isAuthenticated === null) {
-      return null; // Or loading screen
+      return (
+        <div className="flex h-screen w-screen items-center justify-center bg-white">
+          <svg
+            className="animate-spin h-10 w-10 text-gray-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+        </div>
+      );
     }
 
     return <Component {...props} />;
