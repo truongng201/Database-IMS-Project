@@ -93,7 +93,13 @@ class LoginController:
 
         logger.info(f"Login successful for email: {payload.email}")
 
-        return TokensModel(
-            access_token=access_token,
-            refresh_token=refresh_token
-        )
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": {
+                "user_id": user.get("user_id"),
+                "role_name": user.get("role_name"),
+                "warehouse_id": user.get("warehouse_id"),
+                "email": user.get("email"),
+            }
+        }

@@ -1,9 +1,21 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    console.log("email", email);
+    console.log("password", password);
+  }
+
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
       <div className="z-10 w-full max-w-md overflow-hidden rounded-2xl border border-gray-100 shadow-xl">
@@ -13,7 +25,7 @@ export default function LoginPage() {
             Use your email and password to sign in
           </p>
         </div>
-        <form className="flex flex-col space-y-4 bg-gray-50 px-4 py-8 sm:px-16">
+        <form className="flex flex-col space-y-4 bg-gray-50 px-4 py-8 sm:px-16" onSubmit={handleSubmit}>
           <div>
             <label
               htmlFor="email"
@@ -28,6 +40,8 @@ export default function LoginPage() {
               placeholder="johndoe@gmail.com"
               autoComplete="email"
               required
+              onChange={(e) => setEmail(e.target.value)}
+              value={email}
               className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
             />
           </div>
@@ -43,6 +57,8 @@ export default function LoginPage() {
               name="password"
               type="password"
               required
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
               className="mt-1 block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-black focus:outline-none focus:ring-black sm:text-sm"
             />
           </div>

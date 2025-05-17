@@ -8,7 +8,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=StandardResponse)
 @standard_response
-def login(payload: LoginModel, request: Request) -> TokensModel:
+def login(payload: LoginModel, request: Request):
     client_ip = request.client.host
     user_agent = request.headers.get("User-Agent")
     controller = LoginController()

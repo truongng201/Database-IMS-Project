@@ -1,7 +1,9 @@
+"use client";
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UsersTable } from './users-table';
 
-export default async function UsersPage() {
+function UsersPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -21,3 +23,5 @@ export default async function UsersPage() {
     </Tabs>
   );
 }
+
+export default withAuth(UsersPage);

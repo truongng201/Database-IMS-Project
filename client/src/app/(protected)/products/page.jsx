@@ -1,9 +1,11 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+"use client";
+
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { File, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductsTable } from './products-table';
-
-export default async function ProductsPage() {
+import withAuth from '@/hooks/withAuth';
+function ProductsPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -32,3 +34,5 @@ export default async function ProductsPage() {
     </Tabs>
   );
 }
+
+export default withAuth(ProductsPage);

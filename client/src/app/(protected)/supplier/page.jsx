@@ -1,9 +1,12 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+"use client";
+
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { File, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SupplierTable } from "./supplier-table";
+import withAuth from "@/hooks/withAuth";
 
-export default async function SuppliersPage() {
+function SuppliersPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
@@ -28,3 +31,5 @@ export default async function SuppliersPage() {
     </Tabs>
   );
 }
+
+export default withAuth(SuppliersPage);
