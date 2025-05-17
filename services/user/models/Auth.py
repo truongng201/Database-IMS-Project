@@ -17,8 +17,6 @@ class RegisterModel(BaseModel):
     email: str = Field(..., title="Email", description="User's email address")
     password: str = Field(..., title="Password", description="User's password")
     username: str = Field(..., title="Username", description="User's username")
-    full_name: str = Field(..., title="Full Name", description="User's full name")
-    role_id: int = Field(..., title="Role ID", description="User's role ID")
     
     class Config:
         orm_mode = True
@@ -27,9 +25,6 @@ class RegisterModel(BaseModel):
                 "email": "user@example.com",
                 "password": "string",
                 "username": "johndoe",
-                "full_name": "John Doe",
-                "role_id": 1,
-                "is_active": True
             }
         }
         

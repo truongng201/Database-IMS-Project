@@ -17,9 +17,9 @@ def login(payload: LoginModel, request: Request) -> TokensModel:
 
 @router.get("/get-user-detail", response_model=StandardResponse)
 @standard_response
-def get_user_detail(user_id: int = Depends(login_required)):
+def get_user_detail(user_info: dict = Depends(login_required)):
     controller = GetUserDetailController()
-    response = controller.execute(user_id)
+    response = controller.execute(user_info)
     return response
 
 
@@ -29,14 +29,6 @@ def register(payload: RegisterModel):
     controller = RegisterController()
     controller.execute(payload)
     return {}
-
-
-@router.get("/get-all-roles", response_model=StandardResponse)
-@standard_response
-def get_all_roles():
-    controller = GetAllRolesController()
-    response = controller.execute()
-    return response
 
 
 @router.post("/update-user-info", response_model=StandardResponse)
@@ -62,3 +54,17 @@ def get_new_access_token(refresh_token: str):
     controller = GetNewAccessTokenController()
     response = controller.execute(refresh_token)
     return response
+
+# @router.post("/activate-user", response_model=StandardResponse)
+# @standard_response
+# def activate_user(user_id: int, activation_code: str):
+#     controller = ActivateUserController()
+#     controller.execute(user_id, activation_code)
+#     return {}
+
+# @router.post("/assign-warehouse", response_model=StandardResponse)
+# @standard_response
+# def assign_warehouse(user_id: int, warehouse_id: int, user_id_from_token: int = Depends(login_required)):
+#     controller = AssignWarehouseController()
+#     controller.execute(user_id, warehouse_id, user_id_from_token)
+#     return {}

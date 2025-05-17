@@ -12,17 +12,18 @@ class GetUserDetailQuery:
                 user_id,
                 username,
                 email,
-                full_name,
                 role_name,
-                is_active
+                image_url,
+                users.warehouse_id as warehouse_id,
+                warehouses.name as warehouse_name,
+                warehouses.address as warehouse_address
             FROM users 
-            LEFT JOIN roles ON users.role_id = roles.role_id
+            LEFT JOIN warehouses ON users.warehouse_id = warehouses.warehouse_id
             WHERE users.user_id = %s
             AND users.is_active = TRUE
         """
         params = (user_id,)
         result = self.db.execute_query(query, params)
-        self.db.close_pool()
         if not result:
             return None
         user = result[0]
@@ -30,9 +31,14 @@ class GetUserDetailQuery:
             user_id=user[0],
             username=user[1],
             email=user[2],
-            full_name=user[3],
-            role_name=user[4],
-            is_active=user[5]
+            role_name=user[3],
+            image_url=user[4],
+            warehouse_id=user[5],
+            warehouse_name=user[6],
+            warehouse_address=user[7]
         )
         
         return res
+    
+    def close(self):
+        self.db.close_pool()

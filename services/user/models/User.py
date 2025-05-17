@@ -5,9 +5,11 @@ class UserModel(BaseModel):
     username: str = Field(..., title="Username", description="Username of the user")
     email: str = Field(..., title="Email", description="Email address of the user")
     role_name: str = Field(..., title="Role Name", description="Role name of the user")
-    full_name: str = Field(..., title="Full Name", description="Full name of the user")
-    is_active: bool = Field(True, title="Is Active", description="Indicates if the user is active")
-
+    image_url: str = Field(None, title="Image URL", description="URL of the user's profile image")
+    warehouse_id: int = Field(None, title="Warehouse ID", description="Unique identifier for the warehouse")
+    warehouse_name: str = Field(None, title="Warehouse Name", description="Name of the warehouse")
+    warehouse_address: str = Field(None, title="Warehouse Address", description="Address of the warehouse")
+    
     class Config:
         orm_mode = True
         schema_extra = {
@@ -16,22 +18,10 @@ class UserModel(BaseModel):
                 "username": "johndoe",
                 "email": "user@example.com",
                 "role_name": "admin",
-                "full_name": "John Doe",
-                "is_active": True
-            }
-        }
-
-
-class RoleModel(BaseModel):
-    role_id: int = Field(..., title="Role ID", description="Unique identifier for the role")
-    role_name: str = Field(..., title="Role Name", description="Name of the role")
-
-    class Config:
-        orm_mode = True
-        schema_extra = {
-            "example": {
-                "role_id": 1,
-                "role_name": "admin"
+                "image_url": "https://example.com/image.jpg",
+                "warehouse_id": 1,
+                "warehouse_name": "Main Warehouse",
+                "warehouse_address": "123 Warehouse St, City, Country"
             }
         }
         

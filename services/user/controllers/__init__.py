@@ -1,6 +1,5 @@
 from .LoginController import LoginController
 from .RegisterController import RegisterController
-from .GetAllRolesController import GetAllRolesController
 from .GetUserDetailController import GetUserDetailController
 from .UpdateUserController import UpdateUserController
 from .LogoutController import LogoutController
