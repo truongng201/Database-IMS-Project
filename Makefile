@@ -1,5 +1,5 @@
 # Declare phony targets (not associated with actual files)
-.PHONY: all services-up services-down all-services-down client-install client-dev client-build client-start
+.PHONY: all db-up services-up services-down all-services-down client-install client-dev client-build client-start 
 
 # === Combined target ===
 

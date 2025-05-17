@@ -5,13 +5,12 @@ faker = Faker()
 
 # Constants
 NUM_SUPPLIERS = 100
-NUM_LOCATIONS = 30
+NUM_LOCATIONS = 5
 NUM_PRODUCTS = 1000
-NUM_CUSTOMERS = 1000
-NUM_ORDERS = 1000
-NUM_ORDER_ITEMS = 1000
-NUM_USERS = 10
-
+NUM_CUSTOMERS = 100
+NUM_ORDERS = 100
+NUM_ORDER_ITEMS = 100
+INVENTORIES_PER_LOCATION = 5
 
 categories = [
     ["Electronics", "Devices, gadgets, and accessories."],
@@ -24,65 +23,13 @@ categories = [
     ["Automotive", "Car parts and accessories."],
     ["Food", "Groceries and gourmet items."],
     ["Health", "Wellness and medical supplies."],
-    ["Home", "Household items and decor."],
-    ["Garden", "Outdoor and gardening supplies."],
-    ["Pet Supplies", "Products for pets."],
-    ["Office Supplies", "Stationery and office equipment."],
-    ["Jewelry", "Accessories and adornments."],
-    ["Music", "Musical instruments and accessories."],
-    ["Movies", "Films and entertainment media."],
-    ["Video Games", "Gaming consoles and accessories."],
-    ["Travel", "Luggage and travel accessories."],
-    ["Tools", "Hand and power tools for DIY projects."],
-    ["Health & Beauty", "Products for health and beauty."],
-    ["Baby", "Products for infants and toddlers."],
-    ["Gifts", "Gift items for various occasions."],
-    ["Watches", "Timepieces and accessories."],
-    ["Collectibles", "Items for collectors."],
-    ["Crafts", "Art and craft supplies."],
-    ["Musical Instruments", "Instruments and accessories."],
-    ["Photography", "Cameras and photography equipment."],
-    ["Computers", "Hardware and software products."],
-    ["Networking", "Networking equipment and accessories."],
-    ["Smart Home", "Smart devices for home automation."],
-    ["Virtual Reality", "VR headsets and accessories."],
-    ["Drones", "Unmanned aerial vehicles and accessories."],
-    ["3D Printing", "3D printers and supplies."],
-    ["Wearable Technology", "Smartwatches and fitness trackers."],
-    ["Home Improvement", "Tools and materials for home renovation."],
-    ["Camping & Hiking", "Outdoor gear and equipment."],
-    ["Fishing", "Fishing gear and accessories."],
-    ["Cycling", "Bicycles and cycling accessories."],
-    ["Running", "Running shoes and apparel."],
-    ["Yoga", "Yoga mats and accessories."],
-    ["Fitness", "Gym equipment and fitness gear."],
-    ["Outdoor Recreation", "Gear for outdoor activities."],
-    ["Travel Accessories", "Items for travelers."],
-    ["Camping Gear", "Equipment for camping trips."],
-    ["Fishing Gear", "Equipment for fishing enthusiasts."],
-    ["Cycling Gear", "Bicycles and cycling accessories."],
-    ["Hiking Gear", "Equipment for hiking adventures."],
-    ["Running Gear", "Shoes and apparel for runners."],
-    ["Yoga Gear", "Mats and accessories for yoga practitioners."],
-    ["Fitness Gear", "Equipment for fitness enthusiasts."],
-    ["Outdoor Gear", "Equipment for outdoor adventures."],
-    ["Travel Gear", "Accessories for travelers."],
-    ["Camping Supplies", "Items for camping trips."],
-    ["Fishing Supplies", "Gear for fishing enthusiasts."],
-    ["Cycling Supplies", "Bicycles and cycling accessories."],
-    ["Hiking Supplies", "Equipment for hiking adventures."],
-    ["Running Supplies", "Shoes and apparel for runners."],
-    ["Yoga Supplies", "Mats and accessories for yoga practitioners."]
 ]
 
-# Predefined roles
-roles = [
-    ("Admin", "System administrator"),
-    ("Manager", "Inventory manager"),
-    ("User", "Standard user")
+inventory_names = [
+    "Main Stock", "Reserve Stock", "Overflow Storage", "Seasonal Inventory", "Bulk Warehouse",
+    "Retail Floor Stock", "Backroom Reserve", "Specialty Stock", "Returns Processing", "High-Value Vault"
 ]
 
-# Generate SQL inserts
 sql_statements = []
 
 # Categories
@@ -91,83 +38,87 @@ for item in categories:
     description = item[1].replace("'", "''")
     sql_statements.append(f"INSERT INTO categories (name, description) VALUES ('{name}', '{description}');")
 
-# Roles
-for role, desc in roles:
-    sql_statements.append(f"INSERT INTO roles (role_name, description) VALUES ('{role}', '{desc}');")
-
 # Suppliers
 for _ in range(NUM_SUPPLIERS):
     name = faker.company().replace("'", "''")
-    contact = faker.name().replace("'", "''")
-    email = faker.company_email()
+    contact_name = faker.name().replace("'", "''")
+    contact_email = faker.company_email()
     phone = faker.phone_number()
     sql_statements.append(f"INSERT INTO suppliers (name, contact_name, contact_email, phone) "
-                          f"VALUES ('{name}', '{contact}', '{email}', '{phone}');")
+                          f"VALUES ('{name}', '{contact_name}', '{contact_email}', '{phone}');")
 
 # Locations
 for _ in range(NUM_LOCATIONS):
     name = faker.city().replace("'", "''")
     address = faker.street_address().replace("'", "''")
-    city = faker.city().replace("'", "''")
-    state = faker.state().replace("'", "''")
-    zip_code = faker.postcode()
-    sql_statements.append(f"INSERT INTO locations (name, address, city, state, zip_code) "
-                          f"VALUES ('{name}', '{address}', '{city}', '{state}', '{zip_code}');")
+    sql_statements.append(f"INSERT INTO locations (name, address) "
+                          f"VALUES ('{name}', '{address}');")
+
+# Users
+sql_statements.append(f"INSERT INTO users (username, email, password_hash, role_name, location_id, is_active, image_url) "
+                      f"VALUES ('admin', 'admin@admin.com', '21232f297a57a5a743894a0e4a801fc3', 'admin', 1, TRUE, 'https://api.dicebear.com/9.x/identicon/svg?seed=admin');")
+sql_statements.append(f"INSERT INTO users (username, email, password_hash, role_name, location_id, is_active, image_url) "
+                      f"VALUES ('user1', 'user1@user.com', 'e6b84c1a1799a801a69781ed37986eb1', 'staff', 1, FALSE, 'https://api.dicebear.com/9.x/identicon/svg?seed=user1');")
 
 # Customers
 for _ in range(NUM_CUSTOMERS):
-    fname = faker.first_name()
-    lname = faker.last_name()
-    # Generate a unique email
-    email = f"{fname.lower()}.{lname.lower()}{random.randint(1, 100)}@example.com"
+    name = faker.name().replace("'", "''")
+    email = faker.email()
     phone = faker.phone_number()
     address = faker.address().replace('\n', ', ').replace("'", "''")
-    sql_statements.append(f"INSERT INTO customers (first_name, last_name, email, phone, address) "
-                          f"VALUES ('{fname}', '{lname}', '{email}', '{phone}', '{address}');")
-
-# Users
-for _ in range(NUM_USERS):
-    username = faker.user_name()
-    email = faker.email()
-    full_name = faker.name().replace("'", "''")
-    password_hash = faker.sha256()
-    role_id = random.randint(1, len(roles))
-    sql_statements.append(f"INSERT INTO users (username, email, password_hash, role_id, full_name) "
-                          f"VALUES ('{username}', '{email}', '{password_hash}', {role_id}, '{full_name}');")
-
-# Products
-for _ in range(NUM_PRODUCTS):
-    name = faker.word().capitalize().replace("'", "''")
-    desc = faker.sentence().replace("'", "''")
-    price = round(random.uniform(5.0, 1000.0), 2)
-    category_id = random.randint(1, len(categories))
-    supplier_id = random.randint(1, NUM_SUPPLIERS)
-    location_id = random.randint(1, NUM_LOCATIONS)
-    image_url = faker.image_url()
-    sql_statements.append(
-        f"INSERT INTO products (name, description, price, category_id, supplier_id, location_id, image_url) "
-        f"VALUES ('{name}', '{desc}', {price}, {category_id}, {supplier_id}, {location_id}, '{image_url}');"
-    )
+    sql_statements.append(f"INSERT INTO customers (name, email, phone, address) "
+                          f"VALUES ('{name}', '{email}', '{phone}', '{address}');")
 
 # Inventory
-for product_id in range(1, NUM_PRODUCTS + 1):
-    quantity = random.randint(0, 500)
-    sql_statements.append(f"INSERT INTO inventory (product_id, quantity) VALUES ({product_id}, {quantity});")
+for location_id in range(1, NUM_LOCATIONS + 1):
+    for _ in range(INVENTORIES_PER_LOCATION):
+        name = random.choice(inventory_names).replace("'", "''")
+        description = faker.sentence(nb_words=6).replace("'", "''")
+        quantity = random.randint(0, 1000)
+        sql_statements.append(f"INSERT INTO inventory (location_id, name, description, quantity) "
+                              f"VALUES ({location_id}, '{name}', '{description}', {quantity});")
+
+# Products
+total_inventories = NUM_LOCATIONS * INVENTORIES_PER_LOCATION
+for _ in range(NUM_PRODUCTS):
+    name = faker.word().capitalize().replace("'", "''")
+    description = faker.sentence().replace("'", "''")
+    price = round(random.uniform(5.0, 1000.0), 2)
+    supplier_id = random.randint(1, NUM_SUPPLIERS)
+    inventory_id = random.randint(1, total_inventories)
+    category_id = random.randint(1, len(categories))
+    image_url = f"https://api.dicebear.com/9.x/identicon/svg?seed={name}"
+    sql_statements.append(f"INSERT INTO products (name, description, price, supplier_id, inventory_id, category_id, image_url) "
+                          f"VALUES ('{name}', '{description}', {price}, {supplier_id}, {inventory_id}, {category_id}, '{image_url}');")
 
 # Orders
-for order_id in range(1, NUM_ORDERS + 1):
+for _ in range(NUM_ORDERS):
     customer_id = random.randint(1, NUM_CUSTOMERS)
-    status = random.choice(["Pending", "Shipped", "Delivered", "Cancelled"])
+    status = random.choice(['pending', 'completed', 'cancelled'])
     sql_statements.append(f"INSERT INTO orders (customer_id, status) VALUES ({customer_id}, '{status}');")
 
 # Order Items
-for _ in range(NUM_ORDER_ITEMS):
+order_item_ids = []
+for i in range(NUM_ORDER_ITEMS):
     order_id = random.randint(1, NUM_ORDERS)
-    product_id = random.randint(1, NUM_PRODUCTS)
+    sql_statements.append(f"INSERT INTO order_items (order_id) VALUES ({order_id});")
+    order_item_ids.append(i + 1)
+
+# Product Order Items
+used_combinations = set()  # Track used (product_id, order_item_id) pairs
+for _ in range(NUM_ORDER_ITEMS):
+    while True:  # Keep trying until a unique combination is found
+        product_id = random.randint(1, NUM_PRODUCTS)
+        order_item_id = random.choice(order_item_ids)
+        combination = (product_id, order_item_id)
+        if combination not in used_combinations:
+            used_combinations.add(combination)
+            break
     quantity = random.randint(1, 10)
-    price = round(random.uniform(5.0, 1000.0), 2)
-    sql_statements.append(f"INSERT INTO order_items (order_id, product_id, quantity, price) "
-                          f"VALUES ({order_id}, {product_id}, {quantity}, {price});")
+    total_price = round(random.uniform(5.0, 1000.0), 2)
+    sql_statements.append(f"INSERT INTO product_order_items (product_id, order_item_id, quantity, total_price) "
+                          f"VALUES ({product_id}, {order_item_id}, {quantity}, {total_price});")
+
 
 # Write to SQL file
 with open("./ims-database/init-scripts/init-db2.sql", "w", encoding="utf-8") as f:

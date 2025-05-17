@@ -37,30 +37,159 @@ This system solves the common issue of fragmented inventory records and manual e
 
 ---
 
-## 🧱 Planned Core Entities (Brief Outline)
+## 🧱 Database Schema
 
-- **User**: Authenticated system user with role info  
-  Fields: `user_id`, `username`, `email`, `password_hash`, `role_id`, `full_name`, `is_active`, `created_time`, `updated_time`
-- **Role**: Defines permissions for users  
-  Fields: `role_id`, `role_name`, `description`, `created_time`, `updated_time`
-- **Product**: Core inventory item (with MinIO file reference for image)  
-  Fields: `product_id`, `name`, `description`, `price`, `category_id`, `supplier_id`, `location_id`, `image_url`, `created_time`, `updated_time`
-- **Category**: Logical grouping for products  
-  Fields: `category_id`, `name`, `description`, `created_time`, `updated_time`
-- **Supplier**: Source of goods and stock  
-  Fields: `supplier_id`, `name`, `contact_name`, `contact_email`, `phone`, `created_time`, `updated_time`
-- **Location**: Physical place where products are stored  
-  Fields: `location_id`, `name`, `address`, `city`, `state`, `zip_code`, `created_time`, `updated_time`
-- **Inventory**: Tracks current stock level per product  
-  Fields: `inventory_id`, `product_id`, `quantity`, `last_updated`, `created_time`, `updated_time`
-- **Customer**: End-user or client for whom the products are sold  
-  Fields: `customer_id`, `first_name`, `last_name`, `email`, `phone`, `address`, `created_time`, `updated_time`
-- **Order**: Represents inventory transactions (inbound/outbound)  
-  Fields: `order_id`, `customer_id`, `order_date`, `status`, `created_time`, `updated_time`
-- **OrderItem**: Line items within an order  
-  Fields: `order_item_id`, `order_id`, `product_id`, `quantity`, `price`, `created_time`, `updated_time`
-- **TransactionLog**: Audit trail for inventory changes
-  Fields: `transaction_id`, `product_id`, `change_type`, `quantity`, `timestamp`, `user_id`, `created_time`, `updated_time`
+This document outlines the database schema for an Inventory Management System, designed to manage products, inventory, orders, users, and related entities. The schema is implemented in SQL and includes tables with their respective fields and purposes.
+
+### User
+**Purpose**: Represents authenticated system users with role information (e.g., admin, staff).
+
+| Field          | Type                  | Description                                      |
+|----------------|-----------------------|--------------------------------------------------|
+| `user_id`      | INT (PK, AI)          | Unique identifier for the user                   |
+| `username`     | VARCHAR(50)           | User's username                                  |
+| `email`        | VARCHAR(255), UNIQUE  | User's email address                             |
+| `password_hash`| VARCHAR(255)          | Hashed password for authentication               |
+| `role_name`    | ENUM('admin', 'staff')| User's role (admin or staff)                     |
+| `is_active`    | BOOLEAN               | Indicates if the user account is active          |
+| `location_id`  | INT (FK)              | References `locations(location_id)`              |
+| `created_time` | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time` | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### LoginLog
+**Purpose**: Tracks user login attempts for security and auditing.
+
+| Field           | Type                  | Description                                      |
+|-----------------|-----------------------|--------------------------------------------------|
+| `login_log_id`  | INT (PK, AI)          | Unique identifier for the login log              |
+| `user_id`       | INT (FK)              | References `users(user_id)`                      |
+| `refresh_token` | VARCHAR(255)          | Token used for session management                |
+| `ip_address`    | VARCHAR(50)           | IP address of the login attempt                  |
+| `user_agent`    | TEXT                  | User agent string of the client device           |
+| `created_time`  | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time`  | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### Location
+**Purpose**: Represents physical places where products are stored (e.g., warehouses, stores).
+
+| Field          | Type                  | Description                                      |
+|----------------|-----------------------|--------------------------------------------------|
+| `location_id`  | INT (PK, AI)          | Unique identifier for the location               |
+| `name`         | VARCHAR(255)          | Name of the location (e.g., "Main Warehouse")    |
+| `address`      | TEXT                  | Physical address of the location                 |
+| `created_time` | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time` | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### Inventory
+**Purpose**: Tracks current stock levels for each product at specific locations.
+
+| Field          | Type                  | Description                                      |
+|----------------|-----------------------|--------------------------------------------------|
+| `inventory_id` | INT (PK, AI)          | Unique identifier for the inventory record       |
+| `product_id`   | INT (FK)              | References `products(product_id)`                |
+| `quantity`     | INT                   | Number of product units in stock                 |
+| `location_id`  | INT (FK)              | References `locations(location_id)`              |
+| `created_time` | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time` | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### Product
+**Purpose**: Represents core inventory items, including a reference to an image stored in MinIO.
+
+| Field          | Type                  | Description                                      |
+|----------------|-----------------------|--------------------------------------------------|
+| `product_id`   | INT (PK, AI)          | Unique identifier for the product                |
+| `name`         | VARCHAR(255)          | Name of the product                              |
+| `description`  | TEXT                  | Description of the product                       |
+| `price`        | DECIMAL(10,2)         | Price per unit of the product                    |
+| `supplier_id`  | INT (FK)              | References `suppliers(supplier_id)`              |
+| `location_id`  | INT (FK)              | References `locations(location_id)`              |
+| `image_url`    | TEXT                  | URL to the product image (stored in MinIO)       |
+| `created_time` | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time` | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### Category
+**Purpose**: Provides logical groupings for products (e.g., Electronics, Clothing).
+
+| Field          | Type                  | Description                                      |
+|----------------|-----------------------|--------------------------------------------------|
+| `category_id`  | INT (PK, AI)          | Unique identifier for the category               |
+| `name`         | VARCHAR(255)          | Name of the category                             |
+| `description`  | TEXT                  | Description of the category                      |
+| `created_time` | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time` | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### ProductCategory
+**Purpose**: Manages the many-to-many relationship between products and categories.
+
+| Field               | Type                  | Description                                      |
+|---------------------|-----------------------|--------------------------------------------------|
+| `product_category_id`| INT (PK, AI)          | Unique identifier for the product-category link  |
+| `product_id`        | INT (FK)              | References `products(product_id)`                |
+| `category_id`       | INT (FK)              | References `categories(category_id)`             |
+| `created_time`      | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time`      | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### Supplier
+**Purpose**: Represents sources of goods and stock for the inventory.
+
+| Field           | Type                  | Description                                      |
+|-----------------|-----------------------|--------------------------------------------------|
+| `supplier_id`   | INT (PK, AI)          | Unique identifier for the supplier               |
+| `name`          | VARCHAR(255)          | Name of the supplier                             |
+| `contact_name`  | VARCHAR(255)          | Contact person’s name                            |
+| `contact_email` | VARCHAR(255)          | Contact email address                            |
+| `phone`         | VARCHAR(50)           | Contact phone number                             |
+| `created_time`  | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time`  | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### Order
+**Purpose**: Represents inventory transactions, such as inbound or outbound orders.
+
+| Field          | Type                  | Description                                      |
+|----------------|-----------------------|--------------------------------------------------|
+| `order_id`     | INT (PK, AI)          | Unique identifier for the order                  |
+| `customer_id`  | INT (FK)              | References `customers(customer_id)`              |
+| `order_date`   | TIMESTAMP             | Date and time the order was placed               |
+| `status`       | ENUM('pending', 'completed', 'cancelled') | Status of the order                   |
+| `created_time` | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time` | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### OrderItem
+**Purpose**: Represents individual line items within an order.
+
+| Field           | Type                  | Description                                      |
+|-----------------|-----------------------|--------------------------------------------------|
+| `order_item_id` | INT (PK, AI)          | Unique identifier for the order item             |
+| `order_id`      | INT (FK)              | References `orders(order_id)`                    |
+| `product_id`    | INT (FK)              | References `products(product_id)`                |
+| `quantity`      | INT                   | Number of units ordered                          |
+| `total_price`   | DECIMAL(10,2)         | Total price for this line item (quantity * price)|
+| `created_time`  | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time`  | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+### Customer
+**Purpose**: Represents end-users or clients for whom products are sold.
+
+| Field           | Type                  | Description                                      |
+|-----------------|-----------------------|--------------------------------------------------|
+| `customer_id`   | INT (PK, AI)          | Unique identifier for the customer               |
+| `first_name`    | VARCHAR(255)          | Customer’s first name                            |
+| `last_name`     | VARCHAR(255)          | Customer’s last name                             |
+| `email`         | VARCHAR(255)          | Customer’s email address                         |
+| `phone`         | VARCHAR(50)           | Customer’s phone number                          |
+| `address`       | TEXT                  | Customer’s address                               |
+| `created_time`  | TIMESTAMP             | Record creation timestamp (default: CURRENT_TIMESTAMP) |
+| `updated_time`  | TIMESTAMP             | Record update timestamp (default: CURRENT_TIMESTAMP, updates on change) |
+
+## Notes
+- **Primary Keys (PK)**: All tables use an auto-incrementing `INT` as the primary key.
+- **Foreign Keys (FK)**: Enforce referential integrity (e.g., `location_id` in `users` references `locations`).
+- **Timestamps**: `created_time` and `updated_time` are included in all tables for auditing.
+- **ENUMs**: Used for fields with fixed values (e.g., `role_name` in `users`, `status` in `orders`).
+- **MinIO Integration**: The `image_url` in `products` references images stored in a MinIO server.
+- **Many-to-Many Relationships**: The `ProductCategory` table links `products` and `categories`.
+
+This schema supports a robust inventory management system with user authentication, stock tracking, and order processing.
 
 ---
 
