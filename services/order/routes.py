@@ -1,15 +1,42 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from controllers import OrderController
+from models import OrderData
+from shared_config import StandardResponse, standard_response
+from shared_utils import login_required
 
 router = APIRouter()
 
-@router.get("/get-all-orders")
-def get_all_orders():
-    return {"status": "Success", "data": [], "message": "Get all orders successfully"}
+@router.get("/get-all-orders", response_model=StandardResponse)
+@standard_response
+def get_all_orders(user_id: int = Depends(login_required)):
+    controller = OrderController()
+    response = controller.get_all_orders()
+    return response
 
-@router.get("/get-order/{order_id}")
-def get_order(order_id: int):
-    return {"status": "Success", "data": {}, "message": f"Get order with ID {order_id} successfully"}
+@router.get("/get-order/{order_id}", response_model=StandardResponse)
+@standard_response
+def get_order(order_id: int, user_id: int = Depends(login_required)):
+    controller = OrderController()
+    response = controller.get_order(order_id)
+    return response
 
-@router.post("/create-order")
-def create_order(order: dict):
-    return {"status": "Success", "data": {}, "message": "Order created successfully !"}
+@router.post("/create-order", response_model=StandardResponse)
+@standard_response
+def create_order(order: OrderData, user_id: int = Depends(login_required)):
+    controller = OrderController()
+    response = controller.create_order(order.dict())
+    return response
+
+@router.post("/update-order/{order_id}", response_model=StandardResponse)
+@standard_response
+async def update_order(order_id: int, order: OrderData, user_id: int = Depends(login_required)):
+    controller = OrderController()
+    response = await controller.update_order(order_id, order)
+    return response
+
+@router.delete("/delete-order/{order_id}", response_model=StandardResponse)
+@standard_response
+async def delete_order(order_id: int, user_id: int = Depends(login_required)):
+    controller = OrderController()
+    response = await controller.delete_order(order_id)
+    return response
