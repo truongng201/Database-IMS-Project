@@ -1,4 +1,7 @@
 fastapi[standard]==0.115.12
 pydantic==2.11.4
-psycopg2-binary==2.9.10
 uvicorn==0.22.0
+mysql-connector-python==9.3.0
+redis==6.0.0
+PyJWT==2.10.1
+bcrypt==4.3.0
