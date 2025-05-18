@@ -12,7 +12,7 @@ class GetUserDetailController:
             self.query.close()
             raise InvalidDataException("User ID is required")
         user = self.query.execute(user_id)
+        self.query.close()
         if not user:
-            self.query.close()
             raise NotFoundException("User not found")
         return user

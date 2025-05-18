@@ -19,6 +19,9 @@ class ActivateUserController:
             self.query.close()
             raise UnauthorizedException("You are not authorized to perform this action.")
         
+        if not warehouse_id:
+            self.query.close()
+            raise InvalidDataException("Warehouse ID is required.")    
         
         if not isinstance(warehouse_id, int):
             self.query.close()

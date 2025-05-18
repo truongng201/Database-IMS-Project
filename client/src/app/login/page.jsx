@@ -22,46 +22,45 @@ function LoginPage() {
   }, []);
 
   const handleSubmit = async (event) => {
-  event.preventDefault();
-  setPending(true);
+    event.preventDefault();
+    setPending(true);
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/login`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.log(errorData);
+      setError(errorData.message);
+      setShowAlert(true);
+
+      // Hide alert after 5 seconds
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 5000);
+
+      setPending(false);
+      return;
     }
-  );
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    console.log(errorData);
-    setError(errorData.message);
-    setShowAlert(true);
-
-    // Hide alert after 5 seconds
-    setTimeout(() => {
-      setShowAlert(false);
-    }, 5000);
-
+    // Success case
+    const data = await response.json();
+    localStorage.setItem("access_token", data?.data?.access_token);
+    localStorage.setItem("refresh_token", data?.data?.refresh_token);
+    localStorage.setItem("user", JSON.stringify(data?.data?.user));
     setPending(false);
-    return;
-  }
-
-  // Success case
-  const data = await response.json();
-  localStorage.setItem("access_token", data?.data?.access_token);
-  localStorage.setItem("refresh_token", data?.data?.refresh_token);
-  localStorage.setItem("user", JSON.stringify(data?.data?.user));
-  setPending(false);
-  setError(null);
-  setShowAlert(false);
-  router.push("/");
-};
-
+    setError(null);
+    setShowAlert(false);
+    router.push("/");
+  };
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-gray-50">
