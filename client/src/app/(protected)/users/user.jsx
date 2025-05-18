@@ -124,6 +124,7 @@ export function User({ user, warehouses, setError, setShowAlert }) {
     <TableRow>
       <TableCell className="hidden w-[100px] sm:table-cell">
         <Image
+          unoptimized
           src={user.image_url || "https://api.dicebear.com/9.x/pixel-art/svg"}
           alt="User Avatar"
           width={40}
