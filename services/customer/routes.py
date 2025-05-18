@@ -29,14 +29,14 @@ def create_customer(customer: CustomerData, user_id: int = Depends(login_require
 
 @router.post("/update-customer/{customer_id}", response_model=StandardResponse)
 @standard_response
-async def update_customer(customer_id: int, customer: CustomerData, user_id: int = Depends(login_required)):
+def update_customer(customer_id: int, customer: CustomerData, user_id: int = Depends(login_required)):
     controller = CustomerController()
-    response = await controller.update_customer(customer_id, customer)
+    response = controller.update_customer(customer_id, customer)
     return response
 
 @router.delete("/delete-customer/{customer_id}", response_model=StandardResponse)
 @standard_response
-async def delete_customer(customer_id: int, user_id: int = Depends(login_required)):
+def delete_customer(customer_id: int, user_id: int = Depends(login_required)):
     controller = CustomerController()
-    response = await controller.delete_customer(customer_id)
+    response = controller.delete_customer(customer_id)
     return response

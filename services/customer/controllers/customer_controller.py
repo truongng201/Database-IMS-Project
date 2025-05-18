@@ -94,7 +94,7 @@ class CustomerController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def update_customer(self, customer_id: int, customer: CustomerData) -> CustomerResponse:
+    def update_customer(self, customer_id: int, customer: CustomerData) -> CustomerResponse:
         try:
             # Check if customer exists
             existing = self.db.execute_query(CustomerQueries.GET_CUSTOMER_BY_ID, (customer_id,))
@@ -141,7 +141,7 @@ class CustomerController:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    async def delete_customer(self, customer_id: int) -> CustomerResponse:
+    def delete_customer(self, customer_id: int) -> CustomerResponse:
         try:
             # Check if customer exists
             existing = self.db.execute_query(CustomerQueries.GET_CUSTOMER_BY_ID, (customer_id,))
