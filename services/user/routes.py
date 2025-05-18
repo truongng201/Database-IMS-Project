@@ -76,3 +76,10 @@ def get_all_warehouses(user_info: dict = Depends(login_required)):
     controller = GetAllWarehousesController()
     response = controller.execute(user_info)
     return response
+
+@router.post("/deactivate-user", response_model=StandardResponse)
+@standard_response
+def deactivate_user(user_id: int, user_info: dict = Depends(login_required)):
+    controller = DeactivateUserController()
+    controller.execute(user_id, user_info)
+    return {}

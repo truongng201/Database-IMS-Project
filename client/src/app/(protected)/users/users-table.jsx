@@ -1,44 +1,54 @@
-'use client';
+"use client";
 
 import {
   TableHead,
   TableRow,
   TableHeader,
   TableBody,
-  Table
-} from '@/components/ui/table';
+  Table,
+} from "@/components/ui/table";
 import {
   Card,
   CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle
-} from '@/components/ui/card';
-import { User } from './user';
-import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+  CardTitle,
+} from "@/components/ui/card";
+import { User } from "./user";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
-export function UsersTable({users, offset, totalUsers}) {
-  let router = useRouter();
-  let usersPerPage = 5;
+export function UsersTable({
+  users,
+  totalUsers,
+  warehouses,
+  setError,
+  setShowAlert,
+}) {
+  const usersPerPage = 5;
+  const [offset, setOffset] = useState(0);
 
-  function prevPage() {
-    console.log('prevPage');
+  const paginatedUsers = users.slice(offset, offset + usersPerPage);
+
+  function prevPage(e) {
+    e.preventDefault();
+    setOffset((prev) => Math.max(prev - usersPerPage, 0));
   }
 
-  function nextPage() {
-    console.log('nextPage');
+  function nextPage(e) {
+    e.preventDefault();
+    setOffset((prev) =>
+      prev + usersPerPage < totalUsers ? prev + usersPerPage : prev
+    );
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Users</CardTitle>
-        <CardDescription>
-          Manage your users and their details.
-        </CardDescription>
+        <CardDescription>Manage your users and their details.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -50,24 +60,24 @@ export function UsersTable({users, offset, totalUsers}) {
               <TableHead>User ID</TableHead>
               <TableHead>Username</TableHead>
               <TableHead className="hidden md:table-cell">Email</TableHead>
+              <TableHead className="hidden md:table-cell">Role</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
               <TableHead className="hidden md:table-cell">
-                Role
+                Warehouse Name
               </TableHead>
-              <TableHead className="hidden md:table-cell">
-                Status
-              </TableHead>
-              <TableHead className="hidden md:table-cell">Warehouse Name</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {paginatedUsers.map((user) => (
               <User
-                key={user.id}
+                key={user.user_id}
                 user={user}
-                onClick={() => router.push(`/users/${user.id}`)}
+                warehouses={warehouses}
+                setError={setError}
+                setShowAlert={setShowAlert}
               />
             ))}
             {users.length === 0 && (
@@ -77,36 +87,35 @@ export function UsersTable({users, offset, totalUsers}) {
                 </TableHead>
               </TableRow>
             )}
-            
           </TableBody>
         </Table>
       </CardContent>
       <CardFooter>
         <form className="flex items-center w-full justify-between">
           <div className="text-xs text-muted-foreground">
-            Showing{' '}
+            Showing{" "}
             <strong>
-              {Math.max(0, Math.min(offset - usersPerPage, totalUsers) + 1)}-{offset}
-            </strong>{' '}
+              {offset + 1}-{Math.min(offset + usersPerPage, totalUsers)}
+            </strong>{" "}
             of <strong>{totalUsers}</strong> users
           </div>
           <div className="flex">
             <Button
-              formAction={prevPage}
+              onClick={prevPage}
               variant="ghost"
               size="sm"
-              type="submit"
-              disabled={offset === usersPerPage}
+              type="button"
+              disabled={offset === 0}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Prev
             </Button>
             <Button
-              formAction={nextPage}
+              onClick={nextPage}
               variant="ghost"
               size="sm"
-              type="submit"
-              disabled={offset + usersPerPage > totalUsers}
+              type="button"
+              disabled={offset + usersPerPage >= totalUsers}
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />

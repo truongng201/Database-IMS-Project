@@ -28,5 +28,3 @@ class GetNewAccessTokenController:
             "refresh_token": refresh_token
         }
         
-    def close(self):
-        self.query.close()

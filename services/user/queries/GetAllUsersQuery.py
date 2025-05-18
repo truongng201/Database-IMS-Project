@@ -19,7 +19,8 @@ class GetAllUsersQuery:
                 users.created_time AS created_time,
                 warehouses.warehouse_id AS warehouse_id,
                 warehouses.name AS warehouse_name,
-                warehouses.address AS warehouse_address
+                warehouses.address AS warehouse_address,
+                users.image_url AS image_url
             FROM users
             LEFT JOIN warehouses ON users.warehouse_id = warehouses.warehouse_id
             LIMIT 100
@@ -37,7 +38,8 @@ class GetAllUsersQuery:
                 "created_time": row[5],
                 "warehouse_id": row[6],
                 "warehouse_name": row[7],
-                "warehouse_address": row[8]
+                "warehouse_address": row[8],
+                "image_url": row[9],
             }
             for row in result
         ]

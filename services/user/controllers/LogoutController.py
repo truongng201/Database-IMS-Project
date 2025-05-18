@@ -30,11 +30,10 @@ class LogoutController:
             raise InvalidDataException("Invalid data provided")
         
         res = self.query.delete_refresh_token(user_id, refresh_token)
+        self.query.close()
         if not res:
-            self.query.close()
             raise Exception("Failed to delete refresh token")
         
         # Add the access token to the cache as blacklist
         self.cache.set(access_token, user_id, ttl=EXPIRATION_TIME)
-        
         return True
