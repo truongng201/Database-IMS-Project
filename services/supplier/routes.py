@@ -29,14 +29,14 @@ def create_supplier(supplier: SupplierData, user_id: int = Depends(login_require
 
 @router.post("/update-supplier/{supplier_id}", response_model=StandardResponse)
 @standard_response
-async def update_supplier(supplier_id: int, supplier: SupplierData, user_id: int = Depends(login_required)):
+def update_supplier(supplier_id: int, supplier: SupplierData, user_id: int = Depends(login_required)):
     controller = SupplierController()
-    response = await controller.update_supplier(supplier_id, supplier)
+    response = controller.update_supplier(supplier_id, supplier)
     return response
 
 @router.delete("/delete-supplier/{supplier_id}", response_model=StandardResponse)
 @standard_response
-async def delete_supplier(supplier_id: int, user_id: int = Depends(login_required)):
+def delete_supplier(supplier_id: int, user_id: int = Depends(login_required)):
     controller = SupplierController()
-    response = await controller.delete_supplier(supplier_id)
+    response = controller.delete_supplier(supplier_id)
     return response

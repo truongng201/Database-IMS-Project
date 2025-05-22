@@ -1,39 +1,40 @@
 from pydantic import BaseModel
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Union
 from datetime import datetime
 
 class OrderResponse(BaseModel):
     status: str
-    data: Dict[str, Any]
+    data: Union[Dict[str, Any], List[Dict[str, Any]]]
     message: str
 
 class OrderItemData(BaseModel):
     product_id: int
     quantity: int
-    price: float
+    price: float  # Unit price
 
 class OrderData(BaseModel):
     customer_id: int
     items: List[OrderItemData]
-    total_amount: float
-    status: str = "pending"  # pending, processing, completed, cancelled
-    notes: Optional[str] = None
+    status: str = "pending"  # pending, completed, cancelled
 
-class OrderItem(BaseModel):
-    id: int
-    order_id: int
+class ProductOrderItem(BaseModel):
+    order_item_id: int
     product_id: int
     quantity: int
-    price: float
-    created_at: datetime
-    updated_at: datetime
+    total_price: float
+
+class OrderItem(BaseModel):
+    order_item_id: int
+    order_id: int
+    created_time: datetime
+    updated_time: datetime
+    products: List[ProductOrderItem]
 
 class Order(BaseModel):
-    id: int
+    order_id: int
     customer_id: int
-    total_amount: float
     status: str
-    notes: Optional[str]
-    created_at: datetime
-    updated_at: datetime
-    items: List[OrderItem] 
+    order_date: datetime
+    created_time: datetime
+    updated_time: datetime
+    items: List[Dict[str, Any]] 

@@ -29,14 +29,14 @@ def create_order(order: OrderData, user_id: int = Depends(login_required)):
 
 @router.post("/update-order/{order_id}", response_model=StandardResponse)
 @standard_response
-async def update_order(order_id: int, order: OrderData, user_id: int = Depends(login_required)):
+def update_order(order_id: int, order: OrderData, user_id: int = Depends(login_required)):
     controller = OrderController()
-    response = await controller.update_order(order_id, order)
+    response = controller.update_order(order_id, order)
     return response
 
 @router.delete("/delete-order/{order_id}", response_model=StandardResponse)
 @standard_response
-async def delete_order(order_id: int, user_id: int = Depends(login_required)):
+def delete_order(order_id: int, user_id: int = Depends(login_required)):
     controller = OrderController()
-    response = await controller.delete_order(order_id)
+    response = controller.delete_order(order_id)
     return response
