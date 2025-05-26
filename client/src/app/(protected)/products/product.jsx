@@ -78,6 +78,48 @@ export function Product({ product, categories, setError, setShowAlert }) {
     }
   }
 
+  // Update product handler
+  async function updateProduct(e) {
+    e.preventDefault();
+    try {
+      const access_token = localStorage.getItem("access_token");
+      const body = {
+        product_id: product.product_id,
+        name: editValues.name,
+        price: parseFloat(editValues.price),
+        description: editValues.description,
+        quantity: parseInt(editValues.quantity, 10),
+        image_url: product.image_url, // keep original image_url (or use editValues if you allow editing)
+        category_id: editValues.category_id || product.category?.category_id,
+        supplier_id: editValues.supplier_id || product.supplier?.supplier_id,
+        warehouse_id: editValues.warehouse_id || product.warehouse?.warehouse_id,
+      };
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/update-product`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${access_token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      if (!response.ok) {
+        setError("Failed to update product");
+        setShowAlert(true);
+        return;
+      }
+      setError("");
+      setShowAlert(true);
+      setShowModal(false);
+      window.location.reload();
+    } catch (error) {
+      setError("Error updating product");
+      setShowAlert(true);
+    }
+  }
+
   return (
     <TableRow key={product.product_id}>
       <TableCell className="hidden sm:table-cell">
