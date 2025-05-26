@@ -124,11 +124,12 @@ export function Product({ product, categories, setError, setShowAlert }) {
     <TableRow key={product.product_id}>
       <TableCell className="hidden sm:table-cell">
         <Image
+          unoptimized
           alt="Product image"
           className="aspect-square rounded-md object-cover"
           width={40}
           height={40}
-          src={product.image_url || "/placeholder.svg"}
+          src={product.image_url || "https://api.dicebear.com/9.x/pixel-art/svg"}
         />
       </TableCell>
       <TableCell className="font-medium">
