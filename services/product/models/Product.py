@@ -47,18 +47,17 @@ class ProductUpdateModel(BaseModel):
                 "location_id": 1
             }
         }
-    
+
 class ProductModel(BaseModel):
     product_id: int = Field(..., title="Product ID", description="Unique identifier for the product")
     name: str = Field(..., title="Product Name", description="Name of the product")
     description: str = Field(None, title="Product Description", description="Description of the product")
     price: float = Field(..., title="Product Price", description="Price of the product")
     image_url: str = Field(None, title="Product Image URL", description="URL of the product image")
-    category_name: str = Field(..., title="Category Name", description="Name of the category")
-    supplier_name: str = Field(..., title="Supplier Name", description="Name of the supplier")
-    location_name: str = Field(..., title="Location Name", description="Name of the location")
-    
-    
+    category: dict = Field(..., title="Category", description="Category information")
+    supplier: dict = Field(..., title="Supplier", description="Supplier information")
+    warehouse: dict = Field(..., title="Warehouse", description="Warehouse information")
+
     class Config:
         orm_mode = True
         schema_extra = {
@@ -68,9 +67,18 @@ class ProductModel(BaseModel):
                 "description": "This is a sample product.",
                 "price": 19.99,
                 "image_url": "http://example.com/image.jpg",
-                "category_name": "Electronics",
-                "supplier_name": "ABC Suppliers",
-                "location_name": "Warehouse A"
+                "category": {
+                    "category_id": 1,
+                    "name": "Electronics"
+                },
+                "supplier": {
+                    "supplier_id": 1,
+                    "name": "ABC Suppliers"
+                },
+                "warehouse": {
+                    "warehouse_id": 1,
+                    "name": "Warehouse A"
+                }
             }
         }
         
@@ -88,9 +96,18 @@ class ProductListModel(BaseModel):
                         "description": "This is a sample product.",
                         "price": 19.99,
                         "image_url": "http://example.com/image.jpg",
-                        "category_name": "Electronics",
-                        "supplier_name": "ABC Suppliers",
-                        "location_name": "Warehouse A"
+                        "category": {
+                            "category_id": 1,
+                            "name": "Electronics"
+                        },
+                        "supplier": {
+                            "supplier_id": 1,
+                            "name": "ABC Suppliers"
+                        },
+                        "warehouse": {
+                            "warehouse_id": 1,
+                            "name": "Warehouse A"
+                        }
                     }
                 ]
             }

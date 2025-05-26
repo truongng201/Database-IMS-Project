@@ -7,10 +7,10 @@ router = APIRouter()
 
 @router.get("/get-all-products", response_model=StandardResponse)
 @standard_response
-def get_all_products(user_id: int = Depends(login_required)):
+def get_all_products(limit: int, offset: int, user_info: dict = Depends(login_required)):
     controller = GetAllProductController()
-    response = controller.execute()
-    return response.products
+    response = controller.execute(limit=limit, offset=offset, user_info=user_info)
+    return {"products": response.products}
 
 @router.get("/get-product/{product_id}", response_model=StandardResponse)
 @standard_response
@@ -57,4 +57,12 @@ def get_categories(user_id: int = Depends(login_required)):
 def get_products_by_category(category_id: int, user_id: int = Depends(login_required)):
     controller = GetProductsByCategoryController()
     response = controller.execute(category_id=category_id)
+    return response
+
+
+@router.get("/count-total-products", response_model=StandardResponse)
+@standard_response
+def count_total_products(user_info: dict = Depends(login_required)):
+    controller = CountTotalProductsController()
+    response = controller.execute(user_info)
     return response
