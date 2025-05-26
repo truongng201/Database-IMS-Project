@@ -1,4 +1,5 @@
 import { TableRow, TableCell } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 export function SupplierItem({ product }) {
   // Format date safely
@@ -17,14 +18,30 @@ export function SupplierItem({ product }) {
     return str.length > max ? str.slice(0, max) + "..." : str;
   };
 
+  // Format product ID as Pxxxx (e.g., P0001)
+  const formatProductId = (id) => {
+    if (!id) return "N/A";
+    const num = typeof id === 'string' && id.startsWith('P') ? id.slice(1) : id;
+    return `P${String(num).padStart(4, '0')}`;
+  };
+
+  // Format currency for price
+  const formatCurrency = (value) => {
+    if (value === undefined || value === null) return "N/A";
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    }).format(value);
+  };
+
   return (
     <TableRow>
-      <TableCell>{product.product_id}</TableCell>
+      <TableCell>{formatProductId(product.product_id)}</TableCell>
       <TableCell>{crop(product.product_name, 20)}</TableCell>
       <TableCell>{crop(product.description, 30)}</TableCell>
-      <TableCell>{Number(product.price).toFixed(2)}</TableCell>
+      <TableCell>{formatCurrency(product.price)}</TableCell>
       <TableCell>{product.quantity}</TableCell>
-      <TableCell>{product.category_name}</TableCell>
+      <TableCell><Badge variant="outline">{product.category_name}</Badge></TableCell>
       <TableCell>{formatDate(product.product_created_time)}</TableCell>
       <TableCell>{formatDate(product.product_updated_time)}</TableCell>
     </TableRow>

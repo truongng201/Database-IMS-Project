@@ -40,3 +40,10 @@ def delete_customer(customer_id: int, user_id: int = Depends(login_required)):
     controller = CustomerController()
     response = controller.delete_customer(customer_id)
     return response
+
+@router.get("/count-customers", response_model=StandardResponse)
+@standard_response
+def count_customers(user_id: int = Depends(login_required)):
+    controller = CustomerController()
+    response = controller.count_customers()
+    return response

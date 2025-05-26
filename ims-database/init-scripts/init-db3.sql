@@ -53,3 +53,23 @@ GROUP BY
     s.phone,
     s.created_time,
     s.updated_time;
+
+-- Customer view
+CREATE VIEW customer_summary_view AS
+SELECT 
+    c.customer_id AS customer_id,
+    c.name AS name,
+    c.email AS email,
+    c.phone AS phone,
+    c.address AS address,
+    c.updated_time AS customer_updated_time,
+    COUNT(DISTINCT o.order_id) AS total_number_orders,
+    COALESCE(SUM(poi.total_price), 0) AS total_spent,
+    MAX(o.order_date) AS last_purchase
+FROM 
+    customers c
+    LEFT JOIN orders o ON c.customer_id = o.customer_id
+    LEFT JOIN order_items oi ON o.order_id = oi.order_id
+    LEFT JOIN product_order_items poi ON oi.order_item_id = poi.order_item_id
+GROUP BY 
+    c.customer_id, c.name, c.email, c.phone, c.updated_time;

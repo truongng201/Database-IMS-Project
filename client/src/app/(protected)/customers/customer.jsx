@@ -29,19 +29,22 @@ export function Customer({ customer, onClick }) {
     }).format(value);
   };
 
+  // Format customer ID as Cxxxx (e.g., C0001)
+  const formatCustomerId = (id) => {
+    if (!id) return "N/A";
+    const num = typeof id === 'string' && id.startsWith('C') ? id.slice(1) : id;
+    return `C${String(num).padStart(4, '0')}`;
+  };
+
   return (
     <TableRow onClick={onClick} className="cursor-pointer">
-      <TableCell>{customer.id}</TableCell>
-      <TableCell className="font-medium">{customer.name || "N/A"}</TableCell>
-      <TableCell>{customer.email || "N/A"}</TableCell>
-      <TableCell className="hidden md:table-cell">{customer.phone || "N/A"}</TableCell>
-      <TableCell className="hidden md:table-cell">{customer.orders || 0} orders</TableCell>
-      <TableCell className="hidden md:table-cell">
-        {formatCurrency(customer.totalSpent)}
-      </TableCell>
-      <TableCell className="hidden md:table-cell">
-        {formatDate(customer.lastPurchase)}
-      </TableCell>
+      <TableCell>{formatCustomerId(customer.customer_id)}</TableCell>
+      <TableCell className="font-medium">{customer.customer_name || customer.name}</TableCell>
+      <TableCell>{customer.email || customer.contact_email}</TableCell>
+      <TableCell>{customer.phone}</TableCell>
+      <TableCell>{customer.total_number_orders ?? 0}</TableCell>
+      <TableCell>{formatCurrency(customer.total_spent ?? 0)}</TableCell>
+      <TableCell>{formatDate(customer.last_purchase_time)}</TableCell>
       <TableCell>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -59,7 +62,6 @@ export function Customer({ customer, onClick }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>View details</DropdownMenuItem>
             <DropdownMenuItem>Edit customer</DropdownMenuItem>
             <DropdownMenuItem>Delete customer</DropdownMenuItem>
           </DropdownMenuContent>
