@@ -51,6 +51,7 @@ export function ProductsTable({ products, offset, setOffset, totalProducts, setE
               <TableHead className="hidden w-[100px] sm:table-cell">
                 <span className="sr-only">Image</span>
               </TableHead>
+              <TableHead className="hidden sm:table-cell">ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="hidden md:table-cell">Price</TableHead>

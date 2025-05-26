@@ -25,6 +25,11 @@ export function Product({ product }) {
     return desc.slice(0, maxChars) + '...';
   }
 
+  // Helper to format product ID as P0001, P0012, etc.
+  function formatProductId(id) {
+    return `P${id.toString().padStart(4, '0')}`;
+  }
+
   return [
     <TableRow key={product.product_id}>
       <TableCell className="hidden sm:table-cell">
@@ -36,6 +41,7 @@ export function Product({ product }) {
           src={product.image_url || '/placeholder.svg'}
         />
       </TableCell>
+      <TableCell className="font-medium">{formatProductId(product.product_id)}</TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell>{cropDescription(product.description)}</TableCell>
       <TableCell className="hidden md:table-cell">{`$${product.price}`}</TableCell>
