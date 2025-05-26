@@ -16,7 +16,7 @@ export function Product({ product }) {
   // Helper to crop description to 120 characters
   function cropDescription(desc) {
     if (!desc) return '';
-    const maxChars = 120;
+    const maxChars = 30;
     if (desc.length <= maxChars) return desc;
     return desc.slice(0, maxChars) + '...';
   }
@@ -35,6 +35,7 @@ export function Product({ product }) {
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell>{cropDescription(product.description)}</TableCell>
       <TableCell className="hidden md:table-cell">{`$${product.price}`}</TableCell>
+      <TableCell className="hidden md:table-cell">{product.quantity}</TableCell>
       <TableCell className="hidden md:table-cell">
         <Badge
           variant="outline"
@@ -78,7 +79,7 @@ export function Product({ product }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem>Update</DropdownMenuItem>
             <DropdownMenuItem>
               <form action={() => {}}>
                 <button type="submit">Delete</button>

@@ -15,6 +15,7 @@ class GetAllProductQuery:
             p.description, 
             p.price, 
             p.image_url,
+            p.quantity,
             c.category_id AS category_id,
             c.name AS category_name,
             s.supplier_id AS supplier_id,
@@ -38,17 +39,18 @@ class GetAllProductQuery:
                 "description": row[2],
                 "price": row[3],
                 "image_url": row[4],
+                "quantity": row[5],
                 "category": {
-                    "category_id": row[5],
-                    "name": row[6]
+                    "category_id": row[6],
+                    "name": row[7]
                 },
                 "supplier": {
-                    "supplier_id": row[7],
-                    "name": row[8]
+                    "supplier_id": row[8],
+                    "name": row[9]
                 },
                 "warehouse": {
-                    "warehouse_id": row[9],
-                    "name": row[10]
+                    "warehouse_id": row[10],
+                    "name": row[11]
                 }
             }
             for row in result
@@ -63,6 +65,7 @@ class GetAllProductQuery:
             p.description, 
             p.price, 
             p.image_url,
+            p.quantity,
             c.category_id AS category_id,
             c.name AS category_name,
             s.supplier_id AS supplier_id,
@@ -89,17 +92,18 @@ class GetAllProductQuery:
                 "description": row[2],
                 "price": row[3],
                 "image_url": row[4],
+                "quantity": row[5],
                 "category": {
-                    "category_id": row[5],
-                    "name": row[6]
+                    "category_id": row[6],
+                    "name": row[7]
                 },
                 "supplier": {
-                    "supplier_id": row[7],
-                    "name": row[8]
+                    "supplier_id": row[8],
+                    "name": row[9]
                 },
                 "warehouse": {
-                    "warehouse_id": row[9],
-                    "name": row[10]
+                    "warehouse_id": row[10],
+                    "name": row[11]
                 }
             }
             for row in result

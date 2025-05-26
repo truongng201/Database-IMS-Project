@@ -53,6 +53,7 @@ class ProductModel(BaseModel):
     name: str = Field(..., title="Product Name", description="Name of the product")
     description: str = Field(None, title="Product Description", description="Description of the product")
     price: float = Field(..., title="Product Price", description="Price of the product")
+    quantity: int = Field(..., title="Product Quantity", description="Total quantity of the product")
     image_url: str = Field(None, title="Product Image URL", description="URL of the product image")
     category: dict = Field(..., title="Category", description="Category information")
     supplier: dict = Field(..., title="Supplier", description="Supplier information")
@@ -66,6 +67,7 @@ class ProductModel(BaseModel):
                 "name": "Sample Product",
                 "description": "This is a sample product.",
                 "price": 19.99,
+                "quantity": 0,
                 "image_url": "http://example.com/image.jpg",
                 "category": {
                     "category_id": 1,
@@ -95,6 +97,7 @@ class ProductListModel(BaseModel):
                         "name": "Sample Product",
                         "description": "This is a sample product.",
                         "price": 19.99,
+                        "quantity": 0,
                         "image_url": "http://example.com/image.jpg",
                         "category": {
                             "category_id": 1,
