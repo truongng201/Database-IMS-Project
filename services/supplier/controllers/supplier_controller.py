@@ -76,11 +76,11 @@ class SupplierController:
         if not isinstance(user_info, dict):
             self.db.close_pool()
             raise InvalidDataException("User info must be a dictionary")
-        user_id = user_info.get("user_id")
+        warehouse_id = user_info.get("warehouse_id")
         role_name = user_info.get("role_name")
-        if not user_id or not role_name:
+        if not warehouse_id or not role_name:
             self.db.close_pool()
-            raise InvalidDataException("User ID and role name must be provided in user info")
+            raise InvalidDataException("Warehouse ID and role name must be provided in user info")
         if role_name not in ("admin", "staff"):
             self.db.close_pool()
             raise InvalidDataException("User role must be either 'admin' or 'staff'")
@@ -95,53 +95,55 @@ class SupplierController:
             if not result:
                 raise NotFoundException(f"Supplier with ID {supplier_id} not found")
             supplier = {
-                "supplier_id": result[0][3],
-                "supplier_name": result[0][4],
-                "contact_name": result[0][5],
-                "contact_email": result[0][6],
-                "phone": result[0][7],
+                "supplier_id": result[0][2],
+                "supplier_name": result[0][3],
+                "contact_name": result[0][4],
+                "contact_email": result[0][5],
+                "phone": result[0][6],
                 "products": []
             }
             for row in result:
                 product = {
-                    "product_id": row[8],
-                    "product_name": row[9],
-                    "description": row[10],
-                    "price": row[11],
-                    "quantity": row[12],
-                    "category_id": row[13],
-                    "category_name": row[14],
-                    "product_created_time": row[15],
-                    "product_updated_time": row[16]
+                    "product_id": row[7],
+                    "product_name": row[8],
+                    "description": row[9],
+                    "price": row[10],
+                    "quantity": row[11],
+                    "category_id": row[12],
+                    "category_name": row[13],
+                    "product_created_time": row[14],
+                    "product_updated_time": row[15]
                 }
-                supplier["products"].append(product)
+                if row[7] is not None:
+                    supplier["products"].append(product)
             return supplier
         elif role_name == "staff":
-            result = self.db.execute_query(SupplierQueries.GET_SUPPLIER_WITH_PRODUCTS_BY_ID, (supplier_id, user_id))
+            result = self.db.execute_query(SupplierQueries.GET_SUPPLIER_WITH_PRODUCTS_BY_ID, (supplier_id, warehouse_id))
             self.db.close_pool()
             if not result:
                 raise NotFoundException(f"Supplier with ID {supplier_id} not found")
             supplier = {
-                "supplier_id": result[0][3],
-                "supplier_name": result[0][4],
-                "contact_name": result[0][5],
-                "contact_email": result[0][6],
-                "phone": result[0][7],
+                "supplier_id": result[0][2],
+                "supplier_name": result[0][3],
+                "contact_name": result[0][4],
+                "contact_email": result[0][5],
+                "phone": result[0][6],
                 "products": []
             }
             for row in result:
                 product = {
-                    "product_id": row[8],
-                    "product_name": row[9],
-                    "description": row[10],
-                    "price": row[11],
-                    "quantity": row[12],
-                    "category_id": row[13],
-                    "category_name": row[14],
-                    "product_created_time": row[15],
-                    "product_updated_time": row[16]
+                    "product_id": row[7],
+                    "product_name": row[8],
+                    "description": row[9],
+                    "price": row[10],
+                    "quantity": row[11],
+                    "category_id": row[12],
+                    "category_name": row[13],
+                    "product_created_time": row[14],
+                    "product_updated_time": row[15]
                 }
-                supplier["products"].append(product)
+                if row[7] is not None:
+                    supplier["products"].append(product)
             return supplier
         return {}
 

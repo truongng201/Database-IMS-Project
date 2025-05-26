@@ -1,13 +1,12 @@
 -- Supplier view
 CREATE VIEW supplier_products_view AS
 SELECT 
-    u.user_id,
-    u.warehouse_id,
+    w.warehouse_id,
     w.name AS warehouse_name,
     s.supplier_id,
     s.name AS supplier_name,
-    s.contact_name AS contact_name,
-    s.contact_email AS contact_email,
+    s.contact_name,
+    s.contact_email,
     s.phone AS contact_phone,
     p.product_id,
     p.name AS product_name,
@@ -19,14 +18,10 @@ SELECT
     p.created_time AS product_created_time,
     p.updated_time AS product_updated_time
 FROM 
-    users u
-    INNER JOIN warehouses w ON u.warehouse_id = w.warehouse_id
-    LEFT JOIN products p ON w.warehouse_id = p.warehouse_id
-    LEFT JOIN suppliers s ON p.supplier_id = s.supplier_id
-    LEFT JOIN categories c ON p.category_id = c.category_id
-WHERE 
-    u.is_active = TRUE
-    AND s.supplier_id IS NOT NULL;
+    suppliers s
+    LEFT JOIN products p ON s.supplier_id = p.supplier_id
+    LEFT JOIN warehouses w ON p.warehouse_id = w.warehouse_id
+    LEFT JOIN categories c ON p.category_id = c.category_id;
 
 CREATE VIEW all_suppliers_by_warehouse_view AS
 SELECT 

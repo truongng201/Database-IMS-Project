@@ -13,12 +13,12 @@ class SupplierQueries:
     GET_ALL_SUPPLIERS_WITH_PRODUCTS = """
         SELECT * FROM supplier_products_view
         WHERE supplier_id = %s
-        ORDER BY supplier_updated_time DESC, supplier_id ASC;
+        ORDER BY product_created_time DESC, product_id ASC;
     """
 
     GET_SUPPLIER_WITH_PRODUCTS_BY_ID = """
         SELECT * FROM supplier_products_view
-        WHERE supplier_id = %s AND warehouse_id = %s
+        WHERE supplier_id = %s AND (warehouse_id = %s OR warehouse_id IS NULL)
         ORDER BY product_updated_time DESC, product_id ASC;
     """
     
