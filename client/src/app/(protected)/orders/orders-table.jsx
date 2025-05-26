@@ -15,14 +15,14 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { Customer } from './customer';
+import { Order } from './order';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function CustomersTable({customers, offset, totalCustomers}) {
+export function OrdersTable({orders, offset, totalOrders}) {
   let router = useRouter();
-  let customersPerPage = 5;
+  let ordersPerPage = 5;
 
   function prevPage() {
     console.log('prevPage');
@@ -35,39 +35,39 @@ export function CustomersTable({customers, offset, totalCustomers}) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Customers</CardTitle>
+        <CardTitle>Orders</CardTitle>
         <CardDescription>
-          View all customers and their orders.
+          Manage your orders and their details.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="hidden md:table-cell">Phone</TableHead>
-              <TableHead className="hidden md:table-cell">Orders</TableHead>
-              <TableHead className="hidden md:table-cell">Total Spent</TableHead>
-              <TableHead className="hidden md:table-cell">Last Purchase</TableHead>
+              <TableHead>Order ID</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden md:table-cell">Date</TableHead>
+              <TableHead className="hidden md:table-cell">Total</TableHead>
+              <TableHead className="hidden md:table-cell">Items</TableHead>
+              <TableHead className="hidden md:table-cell">Payment</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.map((customer) => (
-              <Customer
-                key={customer.id}
-                customer={customer}
-                onClick={() => router.push(`/customers/${customer.id}`)}
+            {orders.map((order) => (
+              <Order
+                key={order.id}
+                order={order}
+                onClick={() => router.push(`/orders/${order.id}`)}
               />
             ))}
-            {customers.length === 0 && (
+            {orders.length === 0 && (
               <TableRow>
                 <TableHead colSpan={8} className="text-center">
-                  No customers found.
+                  No orders found.
                 </TableHead>
               </TableRow>
             )}
@@ -80,9 +80,9 @@ export function CustomersTable({customers, offset, totalCustomers}) {
           <div className="text-xs text-muted-foreground">
             Showing{' '}
             <strong>
-              {Math.max(0, Math.min(offset - customersPerPage, totalCustomers) + 1)}-{offset}
+              {Math.max(0, Math.min(offset - ordersPerPage, totalOrders) + 1)}-{offset}
             </strong>{' '}
-            of <strong>{totalCustomers}</strong> customers
+            of <strong>{totalOrders}</strong> orders
           </div>
           <div className="flex">
             <Button
@@ -90,7 +90,7 @@ export function CustomersTable({customers, offset, totalCustomers}) {
               variant="ghost"
               size="sm"
               type="submit"
-              disabled={offset === customersPerPage}
+              disabled={offset === ordersPerPage}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Prev
@@ -100,7 +100,7 @@ export function CustomersTable({customers, offset, totalCustomers}) {
               variant="ghost"
               size="sm"
               type="submit"
-              disabled={offset + customersPerPage > totalCustomers}
+              disabled={offset + ordersPerPage > totalOrders}
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -110,4 +110,4 @@ export function CustomersTable({customers, offset, totalCustomers}) {
       </CardFooter>
     </Card>
   );
-}
+} 
