@@ -44,11 +44,6 @@ function SuppliersPage() {
   return (
     <Tabs defaultValue="all">
       <div className="flex items-center">
-        <TabsList>
-          <TabsTrigger value="all">All Suppliers</TabsTrigger>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="inactive">Inactive</TabsTrigger>
-        </TabsList>
         <div className="ml-auto flex items-center gap-2">
           <Button size="sm" variant="outline" className="h-8 gap-1">
             <File className="h-3.5 w-3.5" />
@@ -67,22 +62,8 @@ function SuppliersPage() {
       <TabsContent value="all">
         <SupplierTable 
           suppliers={sampleSuppliers} 
-          offset={3} 
+          offset={3}
           totalSuppliers={3} 
-        />
-      </TabsContent>
-      <TabsContent value="active">
-        <SupplierTable 
-          suppliers={sampleSuppliers.filter(supplier => supplier.status === "active")} 
-          offset={2} 
-          totalSuppliers={2} 
-        />
-      </TabsContent>
-      <TabsContent value="inactive">
-        <SupplierTable 
-          suppliers={sampleSuppliers.filter(supplier => supplier.status === "inactive")} 
-          offset={1} 
-          totalSuppliers={1} 
         />
       </TabsContent>
     </Tabs>
