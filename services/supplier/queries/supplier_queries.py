@@ -1,26 +1,35 @@
 class SupplierQueries:
     GET_ALL_SUPPLIERS = """
-        SELECT supplier_id, name, contact_name, contact_email, phone
-        FROM suppliers
-        ORDER BY supplier_id DESC;
+        SELECT * FROM all_suppliers_by_warehouse_view
+        ORDER BY supplier_updated_time DESC, supplier_id ASC;
+    """
+    
+    GET_ALL_SUPPLIERS_BY_WAREHOUSE_ID = """
+        SELECT * FROM all_suppliers_by_warehouse_view
+        WHERE warehouse_id = %s OR warehouse_id IS NULL
+        ORDER BY supplier_updated_time DESC, supplier_id ASC;
+    """
+    
+    GET_ALL_SUPPLIERS_WITH_PRODUCTS = """
+        SELECT * FROM supplier_products_view
+        WHERE supplier_id = %s
+        ORDER BY product_created_time DESC, product_id ASC;
     """
 
-    GET_SUPPLIER_BY_ID = """
-        SELECT supplier_id, name, contact_name, contact_email, phone
-        FROM suppliers
+    GET_SUPPLIER_WITH_PRODUCTS_BY_ID = """
+        SELECT * FROM supplier_products_view
+        WHERE supplier_id = %s AND (warehouse_id = %s OR warehouse_id IS NULL)
+        ORDER BY product_updated_time DESC, product_id ASC;
+    """
+    
+    CHECK_SUPPLIER_EXISTS = """
+        SELECT * FROM suppliers
         WHERE supplier_id = %s;
     """
 
     CREATE_SUPPLIER = """
         INSERT INTO suppliers (name, contact_name, contact_email, phone)
         VALUES (%s, %s, %s, %s);
-    """
-    
-    GET_LAST_INSERTED_SUPPLIER = """
-        SELECT supplier_id, name, contact_name, contact_email, phone
-        FROM suppliers
-        ORDER BY supplier_id DESC
-        LIMIT 1;
     """
     
     UPDATE_SUPPLIER = """
@@ -34,8 +43,3 @@ class SupplierQueries:
         WHERE supplier_id = %s;
     """
     
-    GET_SUPPLIER_BY_EMAIL = """
-        SELECT supplier_id, name, contact_name, contact_email, phone, created_time, updated_time
-        FROM suppliers
-        WHERE contact_email = %s;
-    """ 

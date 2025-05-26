@@ -1,14 +1,15 @@
 class CustomerQueries:
     GET_ALL_CUSTOMERS = """
-        SELECT customer_id, name, email, phone, address
-        FROM customers
-        ORDER BY customer_id DESC;
+        SELECT *
+        FROM customer_summary_view
+        ORDER BY customer_updated_time DESC, customer_id ASC;
     """
 
     GET_CUSTOMER_BY_ID = """
-        SELECT customer_id, name, email, phone, address
-        FROM customers
-        WHERE customer_id = %s;
+        SELECT *
+        FROM customer_summary_view
+        WHERE customer_id = %s
+        ORDER BY customer_updated_time DESC, customer_id ASC;
     """
 
     CREATE_CUSTOMER = """
@@ -39,3 +40,7 @@ class CustomerQueries:
         FROM customers
         WHERE email = %s;
     """ 
+    
+    COUNT_CUSTOMERS = """
+        SELECT COUNT(*) FROM customers;
+    """

@@ -16,29 +16,24 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Customer } from './customer';
-import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function CustomersTable({customers, offset, totalCustomers}) {
-  let router = useRouter();
-  let customersPerPage = 5;
-
-  function prevPage() {
-    console.log('prevPage');
+export function CustomersTable({ customers, offset, setOffset, totalCustomers, limit = 10 }) {
+  function prevPage(e) {
+    e.preventDefault();
+    if (offset - limit >= 0) setOffset(offset - limit);
   }
-
-  function nextPage() {
-    console.log('nextPage');
+  function nextPage(e) {
+    e.preventDefault();
+    if (offset + limit < totalCustomers) setOffset(offset + limit);
   }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Customers</CardTitle>
-        <CardDescription>
-          View all customers and their orders.
-        </CardDescription>
+        <CardDescription>Manage your customers and their details.</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
@@ -47,63 +42,35 @@ export function CustomersTable({customers, offset, totalCustomers}) {
               <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead className="hidden md:table-cell">Phone</TableHead>
-              <TableHead className="hidden md:table-cell">Orders</TableHead>
-              <TableHead className="hidden md:table-cell">Total Spent</TableHead>
-              <TableHead className="hidden md:table-cell">Last Purchase</TableHead>
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Total Orders</TableHead>
+              <TableHead>Total Spent</TableHead>
+              <TableHead>Last Purchase</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {customers.map((customer) => (
-              <Customer
-                key={customer.id}
-                customer={customer}
-                onClick={() => router.push(`/customers/${customer.id}`)}
-              />
+              <Customer key={customer.customer_id || customer.id} customer={customer} />
             ))}
             {customers.length === 0 && (
               <TableRow>
-                <TableHead colSpan={8} className="text-center">
-                  No customers found.
-                </TableHead>
+                <TableHead colSpan={8} className="text-center">No customers found.</TableHead>
               </TableRow>
             )}
-            
           </TableBody>
         </Table>
       </CardContent>
       <CardFooter>
         <form className="flex items-center w-full justify-between">
           <div className="text-xs text-muted-foreground">
-            Showing{' '}
-            <strong>
-              {Math.max(0, Math.min(offset - customersPerPage, totalCustomers) + 1)}-{offset}
-            </strong>{' '}
-            of <strong>{totalCustomers}</strong> customers
+            Showing <strong>{offset + 1}-{Math.min(offset + limit, totalCustomers)}</strong> of <strong>{totalCustomers}</strong> customers
           </div>
           <div className="flex">
-            <Button
-              formAction={prevPage}
-              variant="ghost"
-              size="sm"
-              type="submit"
-              disabled={offset === customersPerPage}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Prev
+            <Button onClick={prevPage} variant="ghost" size="sm" type="button" disabled={offset === 0}>
+              <ChevronLeft className="mr-2 h-4 w-4" /> Prev
             </Button>
-            <Button
-              formAction={nextPage}
-              variant="ghost"
-              size="sm"
-              type="submit"
-              disabled={offset + customersPerPage > totalCustomers}
-            >
-              Next
-              <ChevronRight className="ml-2 h-4 w-4" />
+            <Button onClick={nextPage} variant="ghost" size="sm" type="button" disabled={offset + limit >= totalCustomers}>
+              Next <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
         </form>

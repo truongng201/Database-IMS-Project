@@ -88,7 +88,7 @@ function DesktopNav() {
         <NavItem href="/products" label="Products">
           <Package className="h-5 w-5" />
         </NavItem>
-        <NavItem href="/supplier" label="Suppliers">
+        <NavItem href="/suppliers" label="Suppliers">
           <Cable className="h-5 w-5" />
         </NavItem>
         <NavItem href="/customers" label="Customers">
@@ -161,7 +161,7 @@ function MobileNav() {
             <Package className="h-5 w-5" />
             Products
           </Link>
-          <Link href="/supplier" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
+          <Link href="/suppliers" className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
             <Cable className="h-5 w-5" />
             Suppliers
           </Link>
@@ -185,7 +185,13 @@ function MobileNav() {
 function DashboardBreadcrumb() {
   const path = usePathname();
 
-  if (path === "/") {
+  // split the path by '/' and filter out empty segments
+  let splitted_path = path.split("/")
+    .filter((segment) => segment !== "")
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1));
+  console.log("Path segments:", splitted_path);
+
+  if (splitted_path.length === 0) {
     return (
       <Breadcrumb className="hidden md:flex">
         <BreadcrumbList>
@@ -199,8 +205,8 @@ function DashboardBreadcrumb() {
     );
   }
 
-  const pathname = path.charAt(1).toUpperCase() + path.slice(2);
-
+  // Build breadcrumbs for each path segment
+  let href = "";
   return (
     <Breadcrumb className="hidden md:flex">
       <BreadcrumbList>
@@ -209,12 +215,26 @@ function DashboardBreadcrumb() {
             <Link href="/">Dashboard</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link href={path}>{pathname}</Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
+        {splitted_path.map((segment, idx) => {
+          href += "/" + path.split("/").filter((s) => s !== "")[idx];
+          // Custom label for certain segments
+          let label = segment;
+          if (["suppliers", "customers", "orders", "products", "users"].includes(segment.toLowerCase())) {
+            label = segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase();
+          } else if (["suppliers", "customers", "orders", "products", "users"].includes(splitted_path[idx - 1]?.toLowerCase())) {
+            label = `${splitted_path[idx - 1].charAt(0).toUpperCase() + splitted_path[idx - 1].slice(1).toLowerCase().slice(0, -1)} ${segment}`;
+          }
+          return (
+            <>
+              <BreadcrumbSeparator key={`sep-${idx}`} />
+              <BreadcrumbItem key={href}>
+                <BreadcrumbLink asChild>
+                  <Link href={href}>{label}</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+            </>
+          );
+        })}
       </BreadcrumbList>
     </Breadcrumb>
   );

@@ -1,27 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { File, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CustomersTable } from "./customer-table";
+import { SupplierTable } from "./supplier-table";
 import withAuth from "@/hooks/withAuth";
+import { useEffect, useState } from "react";
 
-function CustomersPage() {
-  const [customers, setCustomers] = useState([]);
+function SuppliersPage() {
+  const [suppliers, setSuppliers] = useState([]);
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
-  const [totalCustomers, setTotalCustomers] = useState(0);
+  const [totalSuppliers, setTotalSuppliers] = useState(0);
   const [offset, setOffset] = useState(0);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(5); // Default page size
 
   useEffect(() => {
     const fetchAll = async () => {
       try {
         const access_token = localStorage.getItem("access_token");
-        // Fetch total customers
+        // Fetch total suppliers
         const totalRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/customer/count-customers`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/supplier/count-suppliers`,
           {
             method: "GET",
             headers: {
@@ -32,17 +32,18 @@ function CustomersPage() {
         );
         if (!totalRes.ok) {
           const errorData = await totalRes.json();
-          setError(errorData?.message || "Failed to fetch total customers");
+          setError(errorData?.message || "Failed to fetch total suppliers");
           setShowAlert(true);
           setTimeout(() => setShowAlert(false), 3000);
           return;
         }
         const totalData = await totalRes.json();
-        setTotalCustomers(totalData?.data || 0);
+        const total = totalData?.data || 0;
+        setTotalSuppliers(total);
 
-        // Fetch all customers
-        const customersRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/customer/get-all-customers`,
+        // Fetch all suppliers (no limit/offset)
+        const suppliersRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/supplier/get-all-suppliers`,
           {
             method: "GET",
             headers: {
@@ -51,15 +52,15 @@ function CustomersPage() {
             },
           }
         );
-        if (!customersRes.ok) {
-          const errorData = await customersRes.json();
-          setError(errorData?.message || "Failed to fetch customers");
+        if (!suppliersRes.ok) {
+          const errorData = await suppliersRes.json();
+          setError(errorData?.message || "Failed to fetch suppliers");
           setShowAlert(true);
           setTimeout(() => setShowAlert(false), 3000);
           return;
         }
-        const customersData = await customersRes.json();
-        setCustomers(customersData?.data || []);
+        const suppliersData = await suppliersRes.json();
+        setSuppliers(suppliersData?.data || []);
       } catch (error) {
         setError("Error fetching data");
         setShowAlert(true);
@@ -69,13 +70,21 @@ function CustomersPage() {
     fetchAll();
   }, []);
 
-  const handleOffsetChange = (newOffset) => setOffset(newOffset);
-  const paginatedCustomers = customers.slice(offset, offset + limit);
+  // Handler to update offset from SupplierTable
+  const handleOffsetChange = (newOffset) => {
+    setOffset(newOffset);
+  };
+
+  // Calculate paginated suppliers for current page
+  const paginatedSuppliers = suppliers.slice(offset, offset + limit);
 
   return (
     <Tabs defaultValue="all">
       {showAlert && (
-        <div className="fixed top-4 right-4 z-50 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-lg" role="alert">
+        <div
+          className="fixed top-4 right-4 z-50 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-lg"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -83,26 +92,29 @@ function CustomersPage() {
         <div className="ml-auto flex items-center gap-2">
           <Button size="sm" variant="outline" className="h-8 gap-1">
             <File className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Export</span>
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Export
+            </span>
           </Button>
           <Button size="sm" className="h-8 gap-1">
             <PlusCircle className="h-3.5 w-3.5" />
-            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">Add Customer</span>
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Add Supplier
+            </span>
           </Button>
         </div>
       </div>
       <TabsContent value="all">
-        <CustomersTable
-          customers={paginatedCustomers}
+        <SupplierTable
+          suppliers={paginatedSuppliers}
           offset={offset}
           setOffset={handleOffsetChange}
-          totalCustomers={totalCustomers}
+          totalSuppliers={totalSuppliers}
           limit={limit}
         />
       </TabsContent>
-      
     </Tabs>
   );
 }
 
-export default withAuth(CustomersPage);
+export default withAuth(SuppliersPage);
