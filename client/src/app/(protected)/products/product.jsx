@@ -11,8 +11,12 @@ import { MoreHorizontal } from 'lucide-react';
 import { TableCell, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useState, useRef } from 'react';
 
 export function Product({ product }) {
+  const [showModal, setShowModal] = useState(false);
+  const modalRef = useRef();
+
   // Helper to crop description to 120 characters
   function cropDescription(desc) {
     if (!desc) return '';
@@ -21,8 +25,8 @@ export function Product({ product }) {
     return desc.slice(0, maxChars) + '...';
   }
 
-  return (
-    <TableRow>
+  return [
+    <TableRow key={product.product_id}>
       <TableCell className="hidden sm:table-cell">
         <Image
           alt="Product image"
@@ -79,7 +83,9 @@ export function Product({ product }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>Update</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setShowModal(true)}>
+              See details
+            </DropdownMenuItem>
             <DropdownMenuItem>
               <form action={() => {}}>
                 <button type="submit">Delete</button>
@@ -88,6 +94,77 @@ export function Product({ product }) {
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
-    </TableRow>
-  );
+    </TableRow>,
+    showModal && (
+      <div
+        key={product.product_id + '-modal'}
+        id="crud-modal"
+        tabIndex={-1}
+        aria-hidden={!showModal}
+        ref={modalRef}
+        className="overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-black bg-opacity-40"
+      >
+        <div className="relative p-4 w-full max-w-md max-h-full">
+          <div className="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+            <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Product Details
+              </h3>
+              <button
+                type="button"
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                onClick={() => setShowModal(false)}
+              >
+                <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+                <span className="sr-only">Close modal</span>
+              </button>
+            </div>
+            <div className="p-4 md:p-5">
+              <div className="mb-4 flex justify-center">
+                <Image
+                  alt="Product image"
+                  className="aspect-square rounded-md object-cover mb-4"
+                  width={120}
+                  height={120}
+                  src={product.image_url || '/placeholder.svg'}
+                />
+              </div>
+              <div className="mb-2">
+                <strong>Name:</strong> {product.name}
+              </div>
+              <div className="mb-2">
+                <strong>Description:</strong> {product.description}
+              </div>
+              <div className="mb-2">
+                <strong>Price:</strong> ${product.price}
+              </div>
+              <div className="mb-2">
+                <strong>Quantity:</strong> {product.quantity}
+              </div>
+              <div className="mb-2">
+                <strong>Category:</strong> {product.category?.name}
+              </div>
+              <div className="mb-2">
+                <strong>Supplier:</strong> {product.supplier?.name}
+              </div>
+              <div className="mb-2">
+                <strong>Warehouse:</strong> {product.warehouse?.name}
+              </div>
+            </div>
+            <div className="flex justify-end items-center gap-x-2 py-3 px-4 border-t border-gray-200 dark:border-gray-600">
+              <button
+                type="button"
+                className="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-2xs hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-800 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700"
+                onClick={() => setShowModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  ];
 }
