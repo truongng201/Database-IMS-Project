@@ -12,27 +12,50 @@ class UpdateProductQuery:
         """
         res = self.db.execute_query(query, (product_id,))
         if not res:
-            self.db.close_pool()
             return False
         return True
+    
+    def update_product(self, updated_product: ProductUpdateModel):
+        # Build dynamic update query based on provided fields
+        fields = []
+        params = []
+        if updated_product.name is not None:
+            fields.append("name = %s")
+            params.append(updated_product.name)
+        if updated_product.description is not None:
+            fields.append("description = %s")
+            params.append(updated_product.description)
+        if updated_product.price is not None:
+            fields.append("price = %s")
+            params.append(updated_product.price)
+        if updated_product.quantity is not None:
+            fields.append("quantity = %s")
+            params.append(updated_product.quantity)
+        if updated_product.image_url is not None:
+            fields.append("image_url = %s")
+            params.append(updated_product.image_url)
+        if updated_product.category_id is not None:
+            fields.append("category_id = %s")
+            params.append(updated_product.category_id)
+        if updated_product.supplier_id is not None:
+            fields.append("supplier_id = %s")
+            params.append(updated_product.supplier_id)
+        if updated_product.warehouse_id is not None:
+            fields.append("warehouse_id = %s")
+            params.append(updated_product.warehouse_id)
         
-    def execute(self, updated_product: ProductUpdateModel):
-        query = """
+        if not fields:
+            return False  # Nothing to update
+        
+        query = f"""
         UPDATE products
-        SET name = %s, description = %s, price = %s, image_url = %s, category_id = %s, supplier_id = %s, location_id = %s
+        SET {', '.join(fields)}
         WHERE product_id = %s;
         """
-        
-        params = (
-            updated_product.name,
-            updated_product.description,
-            updated_product.price,
-            updated_product.image_url,
-            updated_product.category_id,
-            updated_product.supplier_id,
-            updated_product.location_id,
-            updated_product.product_id
-        )
-        res = self.db.execute_query(query, params)
+        params.append(updated_product.product_id)
+        res = self.db.execute_query(query, tuple(params))
         self.db.close_pool()
         return True if res is not None else False
+    
+    def close(self):
+        self.db.close_pool()

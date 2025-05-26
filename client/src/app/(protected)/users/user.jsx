@@ -119,6 +119,9 @@ export function User({ user, warehouses, setError, setShowAlert }) {
       console.log("Error deactivating account:", error);
     }
   };
+  function formatUserID(id) {
+    return `U${id.toString().padStart(4, "0")}`;
+  }
 
   return (
     <TableRow>
@@ -132,7 +135,7 @@ export function User({ user, warehouses, setError, setShowAlert }) {
           className="aspect-square rounded-md object-cover"
         />
       </TableCell>
-      <TableCell className="font-medium">{user.user_id}</TableCell>
+      <TableCell className="font-medium">{formatUserID(user.user_id)}</TableCell>
       <TableCell className="font-medium">{user.username}</TableCell>
       <TableCell className="hidden md:table-cell">{user.email}</TableCell>
       <TableCell className="hidden md:table-cell">

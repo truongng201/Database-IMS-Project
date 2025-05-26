@@ -8,20 +8,24 @@ class GetProductByIdController:
     
     def execute(self, product_id: int) -> ProductModel:
         if not isinstance(product_id, int) or product_id <= 0:
-            raise InvalidDataException("Invalid product ID hi   ")
+            self.query.close()
+            raise InvalidDataException("Invalid product ID")
         response = self.query.execute(product_id=product_id)
+        self.query.close()
         if not response:
             raise NotFoundException("Product not found")
-        
+        print(f"Product found with ID: {response}")
+        # Convert Decimal to float for price if needed
+        price = float(response.get("price")) if response.get("price") is not None else None
         return ProductModel(
             product_id=response.get("product_id"),
             name=response.get("name"),
             description=response.get("description"),
-            price=response.get("price"),
+            price=price,
+            quantity=response.get("quantity"),
             image_url=response.get("image_url"),
-            category_name=response.get("category_name"),
-            supplier_name=response.get("supplier_name"),
-            location_name=response.get("location_name"),
+            category={"name": response.get("category_name")},
+            supplier={"name": response.get("supplier_name")},
+            warehouse={"name": response.get("warehouse_name")}
         )
-        
-        
+

@@ -5,3 +5,4 @@ from .UpdateProductController import UpdateProductController
 from .DeleteProductController import DeleteProductController
 from .GetAllCategoriesController import GetAllCategoriesController
 from .GetProductsByCategoryController import GetProductsByCategoryController
+from .CountTotalProductsController import CountTotalProductsController

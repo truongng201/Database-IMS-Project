@@ -11,27 +11,36 @@ class CreateProductController:
     
     def execute(self, product: ProductCreateModel):
         if not isinstance(product, ProductCreateModel):
+            self.query.close()
             raise InvalidDataException("Invalid product data")
-        if not product.name or not product.description or not product.price:
+        if not product.name or not product.description or product.price is None:
+            self.query.close()
             raise InvalidDataException("Name, description, and price cannot be empty")
         if product.price <= 0:
+            self.query.close()
             raise InvalidDataException("Price must be greater than zero")
+        if product.quantity is None or product.quantity < 0:
+            self.query.close()
+            raise InvalidDataException("Quantity must be zero or greater")
         if not product.image_url:
+            self.query.close()
             raise InvalidDataException("Image URL cannot be empty")
         if product.category_id <= 0:
+            self.query.close()
             raise InvalidDataException("Invalid category ID")
         if product.supplier_id <= 0:
+            self.query.close()
             raise InvalidDataException("Invalid supplier ID")
-        if product.location_id <= 0:
-            raise InvalidDataException("Invalid location ID")
+        if product.warehouse_id <= 0:
+            self.query.close()
+            raise InvalidDataException("Invalid warehouse ID")
 
-
-        response = self.query.execute(product)
+        response = self.query.create_product(product)
         if not response:
+            self.query.close()
             raise Exception("Failed to create product")
 
         logger.info(f"Product created with name: {product.name}")
         return True
-        
-        
-        
+
+
