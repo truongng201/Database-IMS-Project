@@ -4,10 +4,11 @@ class ProductCreateModel(BaseModel):
     name: str = Field(..., title="Product Name", description="Name of the product")
     description: str = Field(None, title="Product Description", description="Description of the product")
     price: float = Field(..., title="Product Price", description="Price of the product")
+    quantity: int = Field(..., title="Product Quantity", description="Total quantity of the product")
     image_url: str = Field(None, title="Product Image URL", description="URL of the product image")
     category_id: int = Field(..., title="Category ID", description="ID of the category")
     supplier_id: int = Field(..., title="Supplier ID", description="ID of the supplier")
-    location_id: int = Field(..., title="Location ID", description="ID of the location")
+    warehouse_id: int = Field(..., title="Warehouse ID", description="ID of the warehouse")
     
     class Config:
         orm_mode = True
@@ -16,10 +17,11 @@ class ProductCreateModel(BaseModel):
                 "name": "Sample Product",
                 "description": "This is a sample product.",
                 "price": 19.99,
+                "quantity": 10,
                 "image_url": "http://example.com/image.jpg",
                 "category_id": 1,
                 "supplier_id": 1,
-                "location_id": 1
+                "warehouse_id": 1
             }
         }
         
@@ -28,10 +30,11 @@ class ProductUpdateModel(BaseModel):
     name: str = Field(None, title="Product Name", description="Name of the product")
     description: str = Field(None, title="Product Description", description="Description of the product")
     price: float = Field(None, title="Product Price", description="Price of the product")
+    quantity: int = Field(None, title="Product Quantity", description="Total quantity of the product")
     image_url: str = Field(None, title="Product Image URL", description="URL of the product image")
     category_id: int = Field(None, title="Category ID", description="ID of the category")
     supplier_id: int = Field(None, title="Supplier ID", description="ID of the supplier")
-    location_id: int = Field(None, title="Location ID", description="ID of the location")
+    warehouse_id: int = Field(None, title="Warehouse ID", description="ID of the warehouse")
     
     class Config:
         orm_mode = True
@@ -41,10 +44,11 @@ class ProductUpdateModel(BaseModel):
                 "name": "Updated Product",
                 "description": "This is an updated product.",
                 "price": 29.99,
+                "quantity": 5,
                 "image_url": "http://example.com/updated_image.jpg",
                 "category_id": 1,
                 "supplier_id": 1,
-                "location_id": 1
+                "warehouse_id": 1
             }
         }
 

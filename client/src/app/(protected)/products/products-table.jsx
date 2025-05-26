@@ -19,7 +19,7 @@ import { Product } from './product';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function ProductsTable({ products, offset, setOffset, totalProducts, setError, setShowAlert, limit = 100 }) {
+export function ProductsTable({ products, offset, setOffset, totalProducts, setError, setShowAlert, limit = 100, categories }) {
   const productsPerPage = 5;
   // Always show the correct 5 products from the current chunk
   const paginatedProducts = products.slice(offset % limit, (offset % limit) + productsPerPage);
@@ -71,6 +71,7 @@ export function ProductsTable({ products, offset, setOffset, totalProducts, setE
                 product={product}
                 setError={setError}
                 setShowAlert={setShowAlert}
+                categories={categories}
               />
             ))}
             {products.length === 0 && (

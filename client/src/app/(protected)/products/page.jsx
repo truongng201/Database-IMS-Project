@@ -13,13 +13,15 @@ function ProductsPage() {
   const [showAlert, setShowAlert] = useState(false);
   const [offset, setOffset] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
-  const limit = 100; // backend fetch chunk size
-  console.log("Total Products:", totalProducts);
+  const [categories, setCategories] = useState([]);
+  const limit = 100;
+  console.log(categories)
   useEffect(() => {
-    const fetchTotalProducts = async () => {
+    const fetchAll = async () => {
       try {
         const access_token = localStorage.getItem("access_token");
-        const response = await fetch(
+        // Fetch total products
+        const totalRes = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/count-total-products`,
           {
             method: "GET",
@@ -29,34 +31,21 @@ function ProductsPage() {
             },
           }
         );
-        if (!response.ok) {
-          const errorData = await response.json();
+        if (!totalRes.ok) {
+          const errorData = await totalRes.json();
           setError(errorData?.message || "Failed to fetch total products");
           setShowAlert(true);
           setTimeout(() => setShowAlert(false), 3000);
           return;
         }
-        const data = await response.json();
-        // Fix: support both snake_case and camelCase keys from backend
+        const totalData = await totalRes.json();
         const total =
-          data?.data?.total_products ?? data?.data?.totalProducts ?? 0;
+          totalData?.data?.total_products ?? totalData?.data?.totalProducts ?? 0;
         setTotalProducts(total);
-      } catch (error) {
-        setError("Error fetching total products");
-        setShowAlert(true);
-        setTimeout(() => setShowAlert(false), 3000);
-      }
-    };
-    fetchTotalProducts();
-  }, []);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const access_token = localStorage.getItem("access_token");
-        // Always fetch the chunk for the current offset
+        // Fetch products for current offset
         const chunkOffset = Math.floor(offset / limit) * limit;
-        const response = await fetch(
+        const productsRes = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/get-all-products?limit=${limit}&offset=${chunkOffset}`,
           {
             method: "GET",
@@ -66,23 +55,39 @@ function ProductsPage() {
             },
           }
         );
-        if (!response.ok) {
-          const errorData = await response.json();
+        if (!productsRes.ok) {
+          const errorData = await productsRes.json();
           setError(errorData?.message || "Failed to fetch products");
           setShowAlert(true);
           setTimeout(() => setShowAlert(false), 3000);
           return;
         }
-        const data = await response.json();
-        setProducts(data?.data?.products || []);
+        const productsData = await productsRes.json();
+        setProducts(productsData?.data?.products || []);
+
+        // Fetch categories
+        const categoriesRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/categories`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${access_token}`,
+            },
+          }
+        );
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json();
+          setCategories(categoriesData?.data || []);
+        }
       } catch (error) {
-        setError("Error fetching products");
+        setError("Error fetching data");
         setShowAlert(true);
         setTimeout(() => setShowAlert(false), 3000);
       }
     };
-    fetchProducts();
-  }, [offset, totalProducts]);
+    fetchAll();
+  }, [offset]);
 
   // Handler to update offset from ProductsTable
   const handleOffsetChange = (newOffset) => {
@@ -124,6 +129,7 @@ function ProductsPage() {
           setError={setError}
           setShowAlert={setShowAlert}
           limit={limit}
+          categories={categories}
         />
       </TabsContent>
     </Tabs>
