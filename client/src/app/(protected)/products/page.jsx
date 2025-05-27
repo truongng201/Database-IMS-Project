@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { File, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,9 @@ import { ProductsTable } from "./products-table";
 import withAuth from "@/hooks/withAuth";
 
 function ProductsPage() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('search') || "";
+  
   const [products, setProducts] = useState([]);
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
@@ -15,15 +19,32 @@ function ProductsPage() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [categories, setCategories] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
+  const [user, setUser] = useState(null);
   const limit = 100;
   console.log(categories)
   useEffect(() => {
+    // Get user info from localStorage
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+
     const fetchAll = async () => {
       try {
         const access_token = localStorage.getItem("access_token");
+        
+        // Build URL with search parameter if it exists
+        const searchParam = searchQuery ? `search=${encodeURIComponent(searchQuery)}` : '';
+        
         // Fetch total products
         const totalRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/count-total-products`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/count-total-products${searchParam ? `?${searchParam}` : ''}`,
           {
             method: "GET",
             headers: {
@@ -47,7 +68,7 @@ function ProductsPage() {
         // Fetch products for current offset
         const chunkOffset = Math.floor(offset / limit) * limit;
         const productsRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/get-all-products?limit=${limit}&offset=${chunkOffset}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/get-all-products?limit=${limit}&offset=${chunkOffset}${searchParam ? `&${searchParam}` : ''}`,
           {
             method: "GET",
             headers: {
@@ -96,6 +117,22 @@ function ProductsPage() {
           const warehousesData = await warehousesRes.json();
           setWarehouses(warehousesData?.data || []);
         }
+
+        // Fetch suppliers
+        const suppliersRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/supplier/get-all-suppliers`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${access_token}`,
+            },
+          }
+        );
+        if (suppliersRes.ok) {
+          const suppliersData = await suppliersRes.json();
+          setSuppliers(suppliersData?.data || []);
+        }
       } catch (error) {
         setError("Error fetching data");
         setShowAlert(true);
@@ -103,7 +140,7 @@ function ProductsPage() {
       }
     };
     fetchAll();
-  }, [offset]);
+  }, [offset, searchQuery]); // Re-fetch when offset or search query changes
 
   // Handler to update offset from ProductsTable
   const handleOffsetChange = (newOffset) => {
@@ -125,6 +162,16 @@ function ProductsPage() {
     warehouse_id: "",
   });
 
+  // Set default warehouse when user data is available and modal opens
+  useEffect(() => {
+    if (showAddModal && user && user.role_name === "Staff" && user.warehouse_id) {
+      setAddValues(prev => ({
+        ...prev,
+        warehouse_id: user.warehouse_id
+      }));
+    }
+  }, [showAddModal, user]);
+
   function handleAddInputChange(e) {
     const { name, value } = e.target;
     setAddValues((prev) => ({ ...prev, [name]: value }));
@@ -134,15 +181,22 @@ function ProductsPage() {
     e.preventDefault();
     try {
       const access_token = localStorage.getItem("access_token");
+      
+      // Set warehouse_id based on user role_name
+      let warehouseId = addValues.warehouse_id;
+      if (user && user.role_name === "staff" && user.warehouse_id) {
+        warehouseId = user.warehouse_id;
+      }
+      
       const body = {
         name: addValues.name,
         price: parseFloat(addValues.price),
         description: addValues.description,
         quantity: parseInt(addValues.quantity, 10),
-        image_url: "/placeholder.svg", // or allow upload
+        image_url: `https://api.dicebear.com/9.x/identicon/svg?seed=${addValues.name}`, // or allow upload
         category_id: addValues.category_id,
         supplier_id: addValues.supplier_id,
-        warehouse_id: addValues.warehouse_id,
+        warehouse_id: warehouseId,
       };
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/product/create-product`,
@@ -156,17 +210,32 @@ function ProductsPage() {
         }
       );
       if (!response.ok) {
-        setError("Failed to create product");
+        const errorData = await response.json();
+        setError(errorData?.message || "Failed to create product");
         setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
         return;
       }
-      setError("");
+      setError("Product created successfully!");
       setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
       setShowAddModal(false);
-      window.location.reload();
+      setAddValues({
+        name: "",
+        price: "",
+        category: "",
+        description: "",
+        quantity: "",
+        supplier: "",
+        warehouse: "",
+        category_id: "",
+        supplier_id: "",
+        warehouse_id: user && user.role_name === "staff" && user.warehouse_id ? user.warehouse_id : "",
+      });
     } catch (error) {
       setError("Error creating product");
       setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
     }
   }
 
@@ -181,6 +250,13 @@ function ProductsPage() {
         </div>
       )}
       <div className="flex items-center">
+        {searchQuery && (
+          <div className="mr-auto">
+            <span className="text-sm text-muted-foreground">
+              Search results for: <strong>"{searchQuery}"</strong>
+            </span>
+          </div>
+        )}
         <div className="ml-auto flex items-center gap-2">
           <Button size="sm" variant="outline" className="h-8 gap-1">
             <File className="h-3.5 w-3.5" />
@@ -206,6 +282,9 @@ function ProductsPage() {
           setShowAlert={setShowAlert}
           limit={limit}
           categories={categories}
+          suppliers={suppliers}
+          user={user}
+          warehouses={warehouses}
         />
       </TabsContent>
       {showAddModal && (
@@ -260,18 +339,39 @@ function ProductsPage() {
                     <input type="number" name="quantity" id="add-quantity" value={addValues.quantity} onChange={handleAddInputChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="100" required />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <label htmlFor="add-supplier" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Supplier ID</label>
-                    <input type="number" name="supplier_id" id="add-supplier" value={addValues.supplier_id} onChange={handleAddInputChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Supplier ID" required />
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <label htmlFor="add-warehouse" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Warehouse</label>
-                    <select id="add-warehouse" name="warehouse_id" value={addValues.warehouse_id} onChange={handleAddInputChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                      <option value="">Select warehouse</option>
-                      {warehouses.map((warehouse) => (
-                        <option key={warehouse.warehouse_id} value={warehouse.warehouse_id}>{warehouse.warehouse_name}</option>
+                    <label htmlFor="add-supplier" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Supplier</label>
+                    <select id="add-supplier" name="supplier_id" value={addValues.supplier_id} onChange={handleAddInputChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+                      <option value="">Select supplier</option>
+                      {suppliers.map((supplier) => (
+                        <option key={supplier.supplier_id} value={supplier.supplier_id}>
+                          {supplier.supplier_name}
+                        </option>
                       ))}
                     </select>
                   </div>
+                  {user && user.role_name === "admin" && (
+                    <div className="col-span-2 sm:col-span-1">
+                      <label htmlFor="add-warehouse" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Warehouse</label>
+                      <select id="add-warehouse" name="warehouse_id" value={addValues.warehouse_id} onChange={handleAddInputChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+                        <option value="">Select warehouse</option>
+                        {warehouses.map((warehouse) => (
+                          <option key={warehouse.warehouse_id} value={warehouse.warehouse_id}>{warehouse.warehouse_name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  {user && user.role_name === "staff" && (
+                    <div className="col-span-2 sm:col-span-1">
+                      <label htmlFor="add-warehouse-display" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Warehouse</label>
+                      <input 
+                        type="text" 
+                        id="add-warehouse-display" 
+                        value={warehouses.find(w => w.warehouse_id === user.warehouse_id)?.warehouse_name || "Your Warehouse"} 
+                        className="bg-gray-100 border border-gray-300 text-gray-500 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-400" 
+                        disabled 
+                      />
+                    </div>
+                  )}
                 </div>
                 <button type="submit" className="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                   <svg className="me-1 -ms-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

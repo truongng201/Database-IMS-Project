@@ -6,7 +6,7 @@ class GetAllProductController:
     def __init__(self):
         self.query = GetAllProductQuery()
 
-    def execute(self, limit: int, offset: int, user_info) -> ProductListModel:
+    def execute(self, limit: int, offset: int, user_info, search: str = None) -> ProductListModel:
         if not isinstance(limit, int) or not isinstance(offset, int):
             self.query.close()
             raise InvalidDataException("Limit and offset must be integers.")
@@ -21,10 +21,10 @@ class GetAllProductController:
             raise InvalidDataException("User role invalid")
 
         if role_name == "admin":
-            response = self.query.get_all_products_by_admin(params=(limit, offset))
+            response = self.query.get_all_products_by_admin(params=(limit, offset), search=search)
             self.query.close()
         elif role_name == "staff":
-            response = self.query.get_all_product_by_user(user_id, params=(limit, offset))
+            response = self.query.get_all_product_by_user(user_id, params=(limit, offset), search=search)
             self.query.close()
 
         if not response:

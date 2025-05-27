@@ -4,7 +4,7 @@ class CountTotalProductsController:
     def __init__(self):
         self.query = CountTotalProductsQuery()
 
-    def execute(self, user_info):
+    def execute(self, user_info, search: str = None):
         # Validate user_info is a dict
         if not isinstance(user_info, dict):
             self.query.close()
@@ -16,13 +16,13 @@ class CountTotalProductsController:
             raise ValueError("Missing 'role_name' in user_info")
         try:
             if role == 'admin':
-                result = self.query.count_all_products()
+                result = self.query.count_all_products(search=search)
                 self.query.close()
                 return {'total_products': result}
             warehouse_id = user_info.get('warehouse_id')
             if warehouse_id is None:
                 raise ValueError("Missing 'warehouse_id' for non-admin user")
-            result = self.query.count_all_products_warehouse(warehouse_id)
+            result = self.query.count_all_products_warehouse(warehouse_id, search=search)
             self.query.close()
             return {'total_products': result}
         finally:
