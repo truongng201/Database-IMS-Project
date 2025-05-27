@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from controllers import SupplierController
 from models import SupplierData
 from shared_config import StandardResponse, standard_response
 from shared_utils import login_required
+from typing import Optional
 
 router = APIRouter()
 
 @router.get("/get-all-suppliers", response_model=StandardResponse)
 @standard_response
-def get_all_suppliers(user_info: dict = Depends(login_required)):
+def get_all_suppliers(search: Optional[str] = Query(None), user_info: dict = Depends(login_required)):
     controller = SupplierController()
-    response = controller.get_all_suppliers(user_info=user_info)
+    response = controller.get_all_suppliers(user_info=user_info, search=search)
     return response
 
 @router.get("/get-supplier/{supplier_id}", response_model=StandardResponse)

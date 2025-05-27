@@ -121,7 +121,9 @@ class CustomerController:
         if not existing:
             self.db.close_pool()
             raise NotFoundException(f"Customer with ID {customer_id} not found")
-
+        if existing[0][6] > 0:
+            self.db.close_pool()
+            raise InvalidDataException("Cannot delete customer with existing orders")
         # Delete customer
         self.db.execute_query(CustomerQueries.DELETE_CUSTOMER, (customer_id,))
         self.db.close_pool()

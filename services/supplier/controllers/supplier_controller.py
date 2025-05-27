@@ -8,7 +8,7 @@ class SupplierController:
     def __init__(self):
         self.db = Database()
 
-    def get_all_suppliers(self, user_info: dict) -> list:
+    def get_all_suppliers(self, user_info: dict, search: str = None) -> list:
         # Validate user_info is a dict
         if not isinstance(user_info, dict):
             self.db.close_pool()
@@ -22,9 +22,18 @@ class SupplierController:
             self.db.close_pool()
             raise InvalidDataException("User role must be either 'admin' or 'staff'")
         
+        # Prepare search parameter
+        search = search.strip() if search else None
+        if search and not isinstance(search, str):
+            raise InvalidDataException("Search must be a string")
         
         if role_name == "admin":
-            result = self.db.execute_query(SupplierQueries.GET_ALL_SUPPLIERS)
+            if search:
+                search_param = f"%{search}%"
+                result = self.db.execute_query(SupplierQueries.GET_ALL_SUPPLIERS_BY_SEARCH, 
+                                             (search_param, search_param, search_param, search_param))
+            else:
+                result = self.db.execute_query(SupplierQueries.GET_ALL_SUPPLIERS)
             self.db.close_pool()
             suppliers = []
             for row in result:
@@ -49,7 +58,12 @@ class SupplierController:
             return suppliers
         
         elif role_name == "staff":
-            result = self.db.execute_query(SupplierQueries.GET_ALL_SUPPLIERS_BY_WAREHOUSE_ID, (warehouse_id,))
+            if search:
+                search_param = f"%{search}%"
+                result = self.db.execute_query(SupplierQueries.GET_ALL_SUPPLIERS_BY_WAREHOUSE_ID_WITH_SEARCH, 
+                                             (warehouse_id, search_param, search_param, search_param, search_param))
+            else:
+                result = self.db.execute_query(SupplierQueries.GET_ALL_SUPPLIERS_BY_WAREHOUSE_ID, (warehouse_id,))
             self.db.close_pool()
             suppliers = []
             for row in result:
@@ -200,22 +214,26 @@ class SupplierController:
         )
 
         self.db.close_pool() 
-        if not res:
+        if res is None:
             raise Exception("Failed to update supplier")       
         return {}
         
 
     def delete_supplier(self, supplier_id: int):
         # Check if supplier exists
-        existing = self.db.execute_query(SupplierQueries.CHECK_SUPPLIER_EXISTS, (supplier_id,))
+        existing = self.db.execute_query(SupplierQueries.GET_ALL_SUPPLIERS_WITH_PRODUCTS, (supplier_id,))
         if not existing:
             self.db.close_pool()
             raise NotFoundException(f"Supplier with ID {supplier_id} not found")
+
+        if existing[0][7] and existing[0][7] > 0:
+            self.db.close_pool()
+            raise InvalidDataException("Cannot delete supplier with existing products")
        
         # Delete supplier
         res = self.db.execute_query(SupplierQueries.DELETE_SUPPLIER, (supplier_id,))
         self.db.close_pool()
-        if not res:
+        if res is None:
             raise Exception("Failed to delete supplier")
         return {}
     
@@ -252,4 +270,3 @@ class SupplierController:
             unique_supplier_ids = set(row[2] for row in result)
             self.db.close_pool()
             return len(unique_supplier_ids)
-        return 0

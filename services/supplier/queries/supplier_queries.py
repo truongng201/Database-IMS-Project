@@ -4,9 +4,28 @@ class SupplierQueries:
         ORDER BY supplier_updated_time DESC, supplier_id ASC;
     """
     
+    GET_ALL_SUPPLIERS_BY_SEARCH = """
+        SELECT * FROM all_suppliers_by_warehouse_view
+        WHERE LOWER(supplier_name) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(contact_name) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(contact_email) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(phone) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        ORDER BY supplier_updated_time DESC, supplier_id ASC;
+    """
+    
     GET_ALL_SUPPLIERS_BY_WAREHOUSE_ID = """
         SELECT * FROM all_suppliers_by_warehouse_view
         WHERE warehouse_id = %s OR warehouse_id IS NULL
+        ORDER BY supplier_updated_time DESC, supplier_id ASC;
+    """
+    
+    GET_ALL_SUPPLIERS_BY_WAREHOUSE_ID_WITH_SEARCH = """
+        SELECT * FROM all_suppliers_by_warehouse_view
+        WHERE (warehouse_id = %s OR warehouse_id IS NULL)
+        AND (LOWER(supplier_name) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(contact_name) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(contact_email) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(phone) LIKE LOWER(CONCAT('%%', %s, '%%'))
         ORDER BY supplier_updated_time DESC, supplier_id ASC;
     """
     
