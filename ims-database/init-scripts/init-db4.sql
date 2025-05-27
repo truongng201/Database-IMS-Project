@@ -19,24 +19,66 @@ CREATE INDEX idx_poi_product_order ON product_order_items(product_id, order_item
 -- Rationale: Speeds up customer lookups by email
 CREATE INDEX idx_customers_email ON customers(email);
 
--- Partitioning Strategy
 
--- Orders Table Strategy: Range partitioning by order date year
--- Rationale: Orders grow over time, and queries often filter by date
-ALTER TABLE orders
-PARTITION BY RANGE (YEAR(order_date)) (
-    PARTITION p0 VALUES LESS THAN (2023),
-    PARTITION p1 VALUES LESS THAN (2024),
-    PARTITION p2 VALUES LESS THAN (2025),
-    PARTITION p3 VALUES LESS THAN (2026),
-    PARTITION p_future VALUES LESS THAN MAXVALUE
-);
+-- Procedure to Create a New Order with Items
+DELIMITER $$
 
--- Products Table Strategy: Hash partitioning by warehouse_id
--- Rationale: Distributes products evenly across partitions for warehouse-specific queries
-ALTER TABLE products
-PARTITION BY HASH (warehouse_id)
-PARTITIONS 4;
+CREATE PROCEDURE CreateOrder(
+    IN p_customer_id INT,
+    IN p_product_ids TEXT,    -- comma-separated product_ids, e.g. '1,2,3'
+    IN p_quantities TEXT,     -- comma-separated quantities, e.g. '2,1,5'
+    IN p_prices TEXT          -- comma-separated prices, e.g. '10.00,20.00,5.50'
+)
+BEGIN
+    DECLARE v_order_id INT;
+    DECLARE i INT DEFAULT 1;
+    DECLARE n INT;
+    DECLARE product_id INT;
+    DECLARE qty INT;
+    DECLARE price DECIMAL(10,2);
+
+    -- Insert new order
+    INSERT INTO orders (customer_id, status) VALUES (p_customer_id, 'pending');
+    SET v_order_id = LAST_INSERT_ID();
+
+    SET n = (LENGTH(p_product_ids) - LENGTH(REPLACE(p_product_ids, ',', '')) + 1);
+
+    WHILE i <= n DO
+        SET product_id = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(p_product_ids, ',', i), ',', -1) AS UNSIGNED);
+        SET qty = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(p_quantities, ',', i), ',', -1) AS UNSIGNED);
+        SET price = CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(p_prices, ',', i), ',', -1) AS DECIMAL(10,2));
+
+        -- Insert order item
+        INSERT INTO order_items (order_id) VALUES (v_order_id);
+        SET @order_item_id = LAST_INSERT_ID();
+
+        -- Insert product_order_item
+        INSERT INTO product_order_items (product_id, order_item_id, quantity, total_price)
+        VALUES (product_id, @order_item_id, qty, qty * price);
+
+        SET i = i + 1;
+    END WHILE;
+END$$
+
+DELIMITER ;
+
+-- Procedure to Update Product Quantity Stock
+DELIMITER $$
+
+CREATE PROCEDURE UpdateProductQuantity(
+    IN p_product_id INT,
+    IN p_quantity_change INT  -- positive to add stock, negative to reduce
+)
+BEGIN
+    UPDATE products
+    SET quantity = quantity + p_quantity_change,
+        updated_time = CURRENT_TIMESTAMP
+    WHERE product_id = p_product_id;
+
+    -- Optional: you may want to add validation to prevent negative stock here
+END$$
+
+DELIMITER ;
 
 -- Triggers
 -- Trigger to update product quantity after inserting into product_order_items

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { File, PlusCircle } from "lucide-react";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { CustomersTable } from "./customer-table";
 import withAuth from "@/hooks/withAuth";
 
-function CustomersPage() {
+function CustomersPageContent() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('search') || "";
   
@@ -261,6 +261,14 @@ function CustomersPage() {
       )}
       
     </Tabs>
+  );
+}
+
+function CustomersPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CustomersPageContent />
+    </Suspense>
   );
 }
 

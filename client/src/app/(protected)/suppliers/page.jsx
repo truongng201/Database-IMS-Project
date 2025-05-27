@@ -5,10 +5,10 @@ import { File, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SupplierTable } from "./supplier-table";
 import withAuth from "@/hooks/withAuth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-function SuppliersPage() {
+function SuppliersPageContent() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get('search') || "";
   
@@ -290,6 +290,14 @@ function SuppliersPage() {
         </div>
       )}
     </Tabs>
+  );
+}
+
+function SuppliersPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SuppliersPageContent />
+    </Suspense>
   );
 }
 
