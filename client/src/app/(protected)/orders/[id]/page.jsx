@@ -1,0 +1,85 @@
+"use client";
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { File, PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { OrderItemTable } from "./order-item-table";
+import withAuth from "@/hooks/withAuth";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+
+function OrderDetailPage() {
+  const { id } = useParams();
+  const [order, setOrder] = useState(null);
+  const [error, setError] = useState(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [offset, setOffset] = useState(0);
+  const [limit, setLimit] = useState(5); // Default page size
+
+  useEffect(() => {
+    const fetchOrder = async () => {
+      try {
+        const access_token = localStorage.getItem("access_token");
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/get-order/${id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${access_token}`,
+            },
+          }
+        );
+        if (!res.ok) {
+          const errorData = await res.json();
+          setError(errorData?.message || "Failed to fetch order");
+          setShowAlert(true);
+          setTimeout(() => setShowAlert(false), 3000);
+          return;
+        }
+        const data = await res.json();
+        setOrder(data?.data || null);
+      } catch (error) {
+        setError("Error fetching data");
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+      }
+    };
+    if (id) fetchOrder();
+  }, [id]);
+
+  // Handler to update offset from OrderItemTable
+  const handleOffsetChange = (newOffset) => {
+    setOffset(newOffset);
+  };
+
+  // Calculate paginated items for current page
+  const paginatedItems =
+    order?.items?.slice(offset, offset + limit) || [];
+
+  return (
+    <Tabs defaultValue="all">
+      {showAlert && (
+        <div
+          className="fixed top-4 right-4 z-50 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-lg"
+          role="alert"
+        >
+          {error}
+        </div>
+      )}
+
+      <TabsContent value="all">
+        <OrderItemTable
+          order={order}
+          items={paginatedItems}
+          offset={offset}
+          setOffset={handleOffsetChange}
+          totalItems={order?.items?.length || 0}
+          limit={limit}
+        />
+      </TabsContent>
+    </Tabs>
+  );
+}
+
+export default withAuth(OrderDetailPage);

@@ -63,7 +63,6 @@ export function OrdersTable({ orders, offset, setOffset, totalOrders, limit = 5 
               <Order
                 key={order.order_id}
                 order={order}
-                onClick={() => router.push(`/orders/${order.order_id}`)}
               />
             ))}
             {orders.length === 0 && (

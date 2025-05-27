@@ -10,8 +10,10 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { formatCurrency } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export function Order({ order, onClick }) {
+  const router = useRouter()
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
     completed: 'bg-green-100 text-green-800',
@@ -96,7 +98,7 @@ export function Order({ order, onClick }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>View details</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push(`/orders/${order.order_id}`)}>View details</DropdownMenuItem>
             <DropdownMenuItem>Update status</DropdownMenuItem>
             <DropdownMenuItem>Cancel order</DropdownMenuItem>
           </DropdownMenuContent>

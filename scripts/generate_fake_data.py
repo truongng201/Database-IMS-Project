@@ -8,8 +8,8 @@ NUM_SUPPLIERS = 100
 NUM_WAREHOUSES = 5
 NUM_PRODUCTS = 1000
 NUM_CUSTOMERS = 100
-NUM_ORDERS = 100
-NUM_ORDER_ITEMS = 100
+NUM_ORDERS = 1000
+NUM_ORDER_ITEMS = 1000
 
 categories = [
     ["Electronics", "Devices, gadgets, and accessories."],
@@ -92,19 +92,30 @@ for order_id in range(1, NUM_ORDERS + 1):
 
 # Order Items
 order_item_to_order = {}  # Maps order_item_id to order_id
-for order_item_id in range(1, NUM_ORDER_ITEMS + 1):
-    order_id = random.randint(1, NUM_ORDERS)
+order_item_id = 1
+
+# Step 1: Ensure each order has at least one order_item
+for order_id in range(1, NUM_ORDERS + 1):
     order_item_to_order[order_item_id] = order_id
     sql_statements.append(f"INSERT INTO order_items (order_id) VALUES ({order_id});")
+    order_item_id += 1
+
+# Step 2: Distribute remaining order_items (if any) randomly
+remaining_items = NUM_ORDER_ITEMS - NUM_ORDERS
+if remaining_items > 0:
+    for _ in range(remaining_items):
+        order_id = random.randint(1, NUM_ORDERS)
+        order_item_to_order[order_item_id] = order_id
+        sql_statements.append(f"INSERT INTO order_items (order_id) VALUES ({order_id});")
+        order_item_id += 1
 
 # Product Order Items
 used_combinations = set()
 max_attempts = NUM_ORDER_ITEMS * 10  # Safeguard to prevent infinite loop
 attempt = 0
 
-for _ in range(NUM_ORDER_ITEMS):
+for order_item_id in range(1, NUM_ORDER_ITEMS + 1):
     while attempt < max_attempts:
-        order_item_id = random.randint(1, NUM_ORDER_ITEMS)
         order_id = order_item_to_order[order_item_id]
         warehouse_id = order_warehouse_map[order_id]
         available_products = [pid for pid, wid in product_warehouse_map.items() if wid == warehouse_id]
