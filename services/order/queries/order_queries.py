@@ -1,20 +1,25 @@
 class OrderQueries:
     GET_ALL_ORDERS = """
-        SELECT o.order_id, o.customer_id, o.status, o.order_date, o.created_time, o.updated_time,
-               oi.order_item_id, poi.product_id, poi.quantity, poi.total_price
-        FROM orders o
-        LEFT JOIN order_items oi ON o.order_id = oi.order_id
-        LEFT JOIN product_order_items poi ON oi.order_item_id = poi.order_item_id
-        ORDER BY o.order_id DESC;
+        SELECT * FROM order_summary_view
+        ORDER BY order_date DESC, order_id ASC;
+    """
+    
+    GET_ALL_ORDERS_BY_WAREHOUSE = """
+        SELECT * FROM order_summary_view
+        WHERE warehouse_id = %s
+        ORDER BY order_date DESC, order_id ASC;
     """
 
-    GET_ORDER_BY_ID = """
-        SELECT o.order_id, o.customer_id, o.status, o.order_date, o.created_time, o.updated_time,
-               oi.order_item_id, poi.product_id, poi.quantity, poi.total_price
-        FROM orders o
-        LEFT JOIN order_items oi ON o.order_id = oi.order_id
-        LEFT JOIN product_order_items poi ON oi.order_item_id = poi.order_item_id
-        WHERE o.order_id = %s;
+    GET_ORDER_DETAIL = """
+        SELECT * FROM order_detail_summary
+        WHERE order_id = %s
+        ORDER BY order_updated_time DESC, order_id ASC;
+    """
+    
+    GET_ORDER_DETAIL_BY_WAREHOUSE = """
+        SELECT * FROM order_detail_summary
+        WHERE order_id = %s AND warehouse_id = %s
+        ORDER BY order_updated_time DESC, order_id ASC;
     """
 
     CREATE_ORDER = """

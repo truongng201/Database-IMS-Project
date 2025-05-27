@@ -5,6 +5,7 @@ import {
   TableRow,
   TableHeader,
   TableBody,
+  TableCell,
   Table
 } from '@/components/ui/table';
 import {
@@ -20,16 +21,17 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function OrdersTable({orders, offset, totalOrders}) {
+export function OrdersTable({ orders, offset, setOffset, totalOrders, limit = 5 }) {
   let router = useRouter();
-  let ordersPerPage = 5;
 
-  function prevPage() {
-    console.log('prevPage');
+  function prevPage(e) {
+    e.preventDefault();
+    if (offset - limit >= 0) setOffset(offset - limit);
   }
 
-  function nextPage() {
-    console.log('nextPage');
+  function nextPage(e) {
+    e.preventDefault();
+    if (offset + limit < totalOrders) setOffset(offset + limit);
   }
 
   return (
@@ -50,7 +52,7 @@ export function OrdersTable({orders, offset, totalOrders}) {
               <TableHead className="hidden md:table-cell">Date</TableHead>
               <TableHead className="hidden md:table-cell">Total</TableHead>
               <TableHead className="hidden md:table-cell">Items</TableHead>
-              <TableHead className="hidden md:table-cell">Payment</TableHead>
+              <TableHead className="hidden md:table-cell">Warehouse</TableHead>
               <TableHead>
                 <span className="sr-only">Actions</span>
               </TableHead>
@@ -59,54 +61,51 @@ export function OrdersTable({orders, offset, totalOrders}) {
           <TableBody>
             {orders.map((order) => (
               <Order
-                key={order.id}
+                key={order.order_id}
                 order={order}
-                onClick={() => router.push(`/orders/${order.id}`)}
+                onClick={() => router.push(`/orders/${order.order_id}`)}
               />
             ))}
             {orders.length === 0 && (
               <TableRow>
-                <TableHead colSpan={8} className="text-center">
+                <TableCell colSpan={8} className="text-center">
                   No orders found.
-                </TableHead>
+                </TableCell>
               </TableRow>
             )}
-            
           </TableBody>
         </Table>
       </CardContent>
       <CardFooter>
-        <form className="flex items-center w-full justify-between">
+        <div className="flex items-center w-full justify-between">
           <div className="text-xs text-muted-foreground">
             Showing{' '}
             <strong>
-              {Math.max(0, Math.min(offset - ordersPerPage, totalOrders) + 1)}-{offset}
+              {totalOrders === 0 ? 0 : Math.min(offset + 1, totalOrders)}-{Math.min(offset + limit, totalOrders)}
             </strong>{' '}
             of <strong>{totalOrders}</strong> orders
           </div>
           <div className="flex">
             <Button
-              formAction={prevPage}
+              onClick={prevPage}
               variant="ghost"
               size="sm"
-              type="submit"
-              disabled={offset === ordersPerPage}
+              disabled={offset === 0}
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
               Prev
             </Button>
             <Button
-              formAction={nextPage}
+              onClick={nextPage}
               variant="ghost"
               size="sm"
-              type="submit"
-              disabled={offset + ordersPerPage > totalOrders}
+              disabled={offset + limit >= totalOrders}
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           </div>
-        </form>
+        </div>
       </CardFooter>
     </Card>
   );

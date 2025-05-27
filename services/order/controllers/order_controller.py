@@ -3,8 +3,8 @@ from shared_utils.database import Database
 from queries.order_queries import OrderQueries
 from models.order import OrderResponse, OrderData, OrderItemData, Order, OrderItem
 from typing import Dict, List
-from datetime import datetime
 from shared_utils.logger import logger
+from shared_config.custom_exception import BadRequestException, NotFoundException
 
 class OrderController:
     def __init__(self):
@@ -48,66 +48,143 @@ class OrderController:
         logger.info(f"Formatted order {order_data['order_id']} with {len(order_data['items'])} items")
         return order_data
 
-    def get_all_orders(self) -> OrderResponse:
-        try:
-            logger.info("Executing get_all_orders query")
+    def get_all_orders(self, user_info):
+        warehouse_id = user_info.get("warehouse_id")
+        role_name = user_info.get("role_name")
+        if not warehouse_id:
+            raise BadRequestException("Warehouse ID is required to retrieve orders")
+        if role_name not in ["admin", "staff"]:
+            raise BadRequestException("Only admin and staff can retrieve orders")
+        
+        if role_name == "admin":
             result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS)
-            logger.info(f"Got {len(result) if result else 0} order rows from database")
+            print(result)
+            self.db.close_pool()
+            if result is None:
+                raise Exception("Failed to retrieve orders from the database")
             
-            if not result:
-                return OrderResponse(
-                    status="Success",
-                    data=[],
-                    message="Get all orders successfully"
-                )
-            
-            # Group results by order_id
-            orders_dict = {}
+            orders = []
             for row in result:
-                order_id = row[0]
-                if order_id not in orders_dict:
-                    orders_dict[order_id] = []
-                orders_dict[order_id].append(row)
+                order_data = {
+                    "order_id": row[0],
+                    "order_date": row[1],
+                    "order_status": row[2],
+                    "customer_id": row[3],
+                    "customer_name": row[4],
+                    "customer_email": row[5],
+                    "customer_phone": row[6],
+                    "warehouse_id": row[7],
+                    "warehouse_name": row[8],
+                    "total_items": row[9],
+                    "total_order_value": row[10],
+                    "unique_products_ordered": row[11],
+                }
+                if orders and orders[-1].get("order_id") == order_data.get("order_id"):
+                    continue
+                orders.append(order_data)
+            return orders
             
-            logger.info(f"Found {len(orders_dict)} unique orders")
-
-            # Format each order with its items
-            orders = [self._format_order_with_items(rows) for rows in orders_dict.values()]
+        
+        if role_name == "staff":
+            result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_BY_WAREHOUSE, (warehouse_id,))
+            self.db.close_pool()
+            if result is None:
+                raise Exception("Failed to retrieve orders from the database")
             
-            return OrderResponse(
-                status="Success",
-                data=orders,
-                message="Get all orders successfully"
-            )
-        except Exception as e:
-            logger.error(f"Error in get_all_orders: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
+            orders = []
+            for row in result:
+                order_data = {
+                    "order_id": row[0],
+                    "order_date": row[1],
+                    "order_status": row[2],
+                    "customer_id": row[3],
+                    "customer_name": row[4],
+                    "customer_email": row[5],
+                    "customer_phone": row[6],
+                    "warehouse_id": row[7],
+                    "warehouse_name": row[8],
+                    "total_items": row[9],
+                    "total_order_value": row[10],
+                    "unique_products_ordered": row[11],
+                }
+                if orders and orders[-1].get("order_id") == order_data.get("order_id"):
+                    continue
+                orders.append(order_data)
+            return orders
+    
+        return []
 
-    def get_order(self, order_id: int) -> OrderResponse:
-        try:
-            logger.info(f"Executing get_order query for ID {order_id}")
-            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
+    def get_order(self, order_id: int, user_info: dict):
+        warehouse_id = user_info.get("warehouse_id")
+        role_name = user_info.get("role_name")
+        
+        if not warehouse_id or not role_name:
+            raise BadRequestException("Warehouse ID and Role Name are required")
+
+        if role_name not in ["admin", "staff"]:
+            raise BadRequestException("Only admin and staff can retrieve orders")
+        
+        order_date = {}
+        if role_name == "staff":
+            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id, warehouse_id))
             logger.info(f"Got result from database: {bool(result)}")
             if not result:
-                logger.info(f"No order found with ID {order_id}")
-                return OrderResponse(
-                    status="Success",
-                    data={},
-                    message=f"Get order with ID {order_id} successfully"
-                )
-            
-            order_data = self._format_order_with_items(result)
-            logger.info(f"Found order with ID {order_id}")
-            return OrderResponse(
-                status="Success",
-                data=order_data,
-                message=f"Get order with ID {order_id} successfully"
-            )
-        except Exception as e:
-            logger.error(f"Error in get_order: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
+                raise NotFoundException(f"Cannot found order with ID {order_id}")
+            order_data = {
+                "order_id": result[0][0],
+                "order_date": result[0][1],
+                "order_status": result[0][2],
+                "customer_id": result[0][3],
+                "customer_name": result[0][4],
+                "customer_email": result[0][5],
+                "customer_phone": result[0][6],
+                "items": []
+            }
+            for row in result:
+                item = {
+                    "order_item_id": row[7],
+                    "product_id": row[8],
+                    "product_name": row[9],
+                    "product_price": row[10],
+                    "quantity_ordered": row[11],
+                    "total_price": row[12]
+                }
+                order_data["items"].append(item)
 
-    def create_order(self, order: dict) -> OrderResponse:
+        if role_name == "admin":
+            result = self.db.execute_query(OrderQueries.GET_ORDER_DETAIL, (order_id,))
+            logger.info(f"Got result from database: {bool(result)}")
+            if not result:
+                raise NotFoundException(f"Cannot found order with ID {order_id}")
+            order_data = {
+                "order_id": result[0][0],
+                "order_date": result[0][1],
+                "order_status": result[0][2],
+                "customer_id": result[0][3],
+                "customer_name": result[0][4],
+                "customer_email": result[0][5],
+                "customer_phone": result[0][6],
+                "items": [],
+                "total_items": 0,
+                "total_price": 0
+            }
+            for row in result:
+                item = {
+                    "order_item_id": row[7],
+                    "product_id": row[8],
+                    "product_name": row[9],
+                    "product_price": row[10],
+                    "quantity_ordered": row[11],
+                    "price": row[12]
+                }
+                order_data["items"].append(item)
+                order_data["total_items"] += 1
+                order_data["total_price"] += item["price"]
+        if order_data and order_data.get("order_id") is None:
+            return {}
+        return order_data
+
+    def create_order(self, order: dict):
         connection = None
         cursor = None
         
@@ -189,7 +266,7 @@ class OrderController:
             if connection:
                 connection.close()
 
-    def update_order(self, order_id: int, order: OrderData) -> OrderResponse:
+    def update_order(self, order_id: int, order: OrderData):
         try:
             # Check if order exists
             result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
@@ -229,7 +306,7 @@ class OrderController:
             logger.error(f"Error updating order: {str(e)}")
             raise HTTPException(status_code=500, detail=str(e))
             
-    def delete_order(self, order_id: int) -> OrderResponse:
+    def delete_order(self, order_id: int):
         try:
             # Check if order exists
             result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))

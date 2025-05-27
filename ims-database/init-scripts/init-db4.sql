@@ -109,3 +109,20 @@ PARTITION BY RANGE (YEAR(order_date)) (
 ALTER TABLE products
 PARTITION BY HASH (warehouse_id)
 PARTITIONS 4;
+
+-- Triggers
+-- Trigger to update product quantity after inserting into product_order_items
+-- This trigger ensures that the product quantity is decremented when a new order item is added.
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_product_order_items
+AFTER INSERT ON product_order_items
+FOR EACH ROW
+BEGIN
+    UPDATE products
+    SET quantity = quantity - NEW.quantity,
+        updated_time = CURRENT_TIMESTAMP
+    WHERE product_id = NEW.product_id;
+END$$
+
+DELIMITER ;

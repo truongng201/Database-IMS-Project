@@ -18,26 +18,68 @@ export function Order({ order, onClick }) {
     cancelled: 'bg-red-100 text-red-800'
   };
 
+  // Format order ID as O0001
+  const formatOrderId = (id) => `O${String(id).padStart(4, '0')}`;
+
+  // Format date safely
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return dateString || "N/A";
+    }
+  };
+
+  // Format currency - handle string values from API
+  const formatCurrencyValue = (value) => {
+    if (value === undefined || value === null) return "N/A";
+    const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    if (isNaN(numValue)) return "N/A";
+    return formatCurrency(numValue);
+  };
+
+  // Parse numeric values that come as strings
+  const parseNumericValue = (value) => {
+    if (value === undefined || value === null) return 0;
+    const parsed = typeof value === 'string' ? parseInt(value, 10) : value;
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
   return (
     <TableRow onClick={onClick} className="cursor-pointer">
-      <TableCell>#{order.id}</TableCell>
-      <TableCell>{order.customerName}</TableCell>
+      <TableCell className="font-medium">
+        {formatOrderId(order.order_id)}
+      </TableCell>
       <TableCell>
-        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status]}`}>
-          {order.status}
+        <div className="flex flex-col">
+          <span className="font-medium">{order.customer_name || "N/A"}</span>
+          <span className="text-sm text-muted-foreground">{order.customer_email || "N/A"}</span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.order_status] || 'bg-gray-100 text-gray-800'}`}>
+          {order.order_status || "unknown"}
         </div>
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {new Date(order.date).toLocaleDateString()}
+        {formatDate(order.order_date)}
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {formatCurrency(order.total)}
+        {formatCurrencyValue(order.total_order_value)}
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {order.items} items
+        <div className="flex flex-col">
+          <span>{parseNumericValue(order.total_items)} items</span>
+          <span className="text-sm text-muted-foreground">
+            {parseNumericValue(order.unique_products_ordered)} unique
+          </span>
+        </div>
       </TableCell>
       <TableCell className="hidden md:table-cell">
-        {order.paymentMethod}
+        <div className="text-sm">
+          {order.warehouse_name || "N/A"}
+        </div>
       </TableCell>
       <TableCell>
         <DropdownMenu>
