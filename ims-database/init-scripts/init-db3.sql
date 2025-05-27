@@ -88,7 +88,7 @@ SELECT
     w.name AS warehouse_name,
     SUM(poi.quantity) AS total_items,
     SUM(poi.total_price) AS total_order_value,
-    COUNT(DISTINCT poi.product_id) AS unique_products_ordered,
+    COUNT(DISTINCT poi.product_id) AS unique_products_ordered
 FROM
     orders o
     LEFT JOIN customers c ON o.customer_id = c.customer_id
@@ -164,7 +164,7 @@ ORDER BY p.updated_time DESC, product_id ASC;
 
 -- User Activity View
 -- Purpose: Tracks user login activity by combining users and login logs data
-CREATE VIEW user_activity AS
+CREATE OR REPLACE VIEW user_activity AS
 SELECT
     u.user_id,
     u.username,
@@ -180,7 +180,7 @@ LEFT JOIN warehouses w ON u.warehouse_id = w.warehouse_id;
 
 -- Low Stock Alert View
 -- Purpose: Identifies products with low inventory for restocking decisions
-CREATE VIEW low_stock_alert AS
+CREATE OR REPLACE VIEW low_stock_alert AS
 SELECT
     p.product_id,
     p.name AS product_name,

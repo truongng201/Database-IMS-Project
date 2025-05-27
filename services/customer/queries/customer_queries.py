@@ -4,6 +4,15 @@ class CustomerQueries:
         FROM customer_summary_view
         ORDER BY customer_updated_time DESC, customer_id ASC;
     """
+    
+    GET_ALL_CUSTOMERS_BY_SEARCH = """
+        SELECT *
+        FROM customer_summary_view
+        WHERE LOWER(name) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(email) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(phone) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        ORDER BY customer_updated_time DESC, customer_id ASC;
+    """
 
     GET_CUSTOMER_BY_ID = """
         SELECT *
