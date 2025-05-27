@@ -9,24 +9,7 @@ class GetAllProductQuery:
 
     def get_all_products_by_admin(self, params=(100, 0)):
         query = """
-        SELECT 
-            p.product_id, 
-            p.name, 
-            p.description, 
-            p.price, 
-            p.image_url,
-            p.quantity,
-            c.category_id AS category_id,
-            c.name AS category_name,
-            s.supplier_id AS supplier_id,
-            s.name AS supplier_name,
-            w.warehouse_id AS warehouse_id,
-            w.name AS warehouse_name
-        FROM products p
-        JOIN categories c ON p.category_id = c.category_id
-        JOIN suppliers s ON p.supplier_id = s.supplier_id
-        JOIN warehouses w ON p.warehouse_id = w.warehouse_id
-        ORDER BY p.product_id
+        SELECT * FROM product_summary
         LIMIT %s OFFSET %s
         """
         result = self.db.execute_query(query, params)
@@ -57,31 +40,13 @@ class GetAllProductQuery:
         ]
         return formatted_result
 
-    def get_all_product_by_user(self, user_id, params=(100, 0)):
+    def get_all_product_by_warehouse(self, warehouse_id, params=(100, 0)):
         query = """
-        SELECT 
-            p.product_id, 
-            p.name, 
-            p.description, 
-            p.price, 
-            p.image_url,
-            p.quantity,
-            c.category_id AS category_id,
-            c.name AS category_name,
-            s.supplier_id AS supplier_id,
-            s.name AS supplier_name,
-            w.warehouse_id AS warehouse_id,
-            w.name AS warehouse_name
-        FROM products p
-        JOIN categories c ON p.category_id = c.category_id
-        JOIN suppliers s ON p.supplier_id = s.supplier_id
-        JOIN warehouses w ON p.warehouse_id = w.warehouse_id
-        JOIN users u ON w.warehouse_id = u.warehouse_id
-        WHERE u.user_id = %s
-        ORDER BY p.product_id
+        SELECT * FROM product_summary
+        WHERE warehouse_id = %s
         LIMIT %s OFFSET %s
         """
-        query_params = (user_id, params[0], params[1])
+        query_params = (warehouse_id, params[0], params[1])
         result = self.db.execute_query(query, query_params)
         if not result:
             return []

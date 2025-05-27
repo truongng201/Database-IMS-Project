@@ -140,3 +140,54 @@ FROM
     JOIN product_order_items poi ON oi.order_item_id = poi.order_item_id
     JOIN products p ON poi.product_id = p.product_id
     JOIN warehouses w ON p.warehouse_id = w.warehouse_id;
+
+-- Product view
+CREATE OR REPLACE VIEW product_summary AS
+SELECT 
+    p.product_id, 
+    p.name, 
+    p.description, 
+    p.price, 
+    p.image_url,
+    p.quantity,
+    c.category_id AS category_id,
+    c.name AS category_name,
+    s.supplier_id AS supplier_id,
+    s.name AS supplier_name,
+    w.warehouse_id AS warehouse_id,
+    w.name AS warehouse_name
+FROM products p
+JOIN categories c ON p.category_id = c.category_id
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+JOIN warehouses w ON p.warehouse_id = w.warehouse_id
+ORDER BY p.updated_time DESC, product_id ASC;
+
+-- User Activity View
+-- Purpose: Tracks user login activity by combining users and login logs data
+CREATE VIEW user_activity AS
+SELECT
+    u.user_id,
+    u.username,
+    u.email,
+    u.role_name,
+    w.name AS warehouse_name,
+    ll.login_time,
+    ll.ip_address,
+    ll.user_agent
+FROM users u
+LEFT JOIN login_logs ll ON u.user_id = ll.user_id
+LEFT JOIN warehouses w ON u.warehouse_id = w.warehouse_id;
+
+-- Low Stock Alert View
+-- Purpose: Identifies products with low inventory for restocking decisions
+CREATE VIEW low_stock_alert AS
+SELECT
+    p.product_id,
+    p.name AS product_name,
+    p.quantity,
+    w.name AS warehouse_name,
+    s.name AS supplier_name
+FROM products p
+JOIN warehouses w ON p.warehouse_id = w.warehouse_id
+JOIN suppliers s ON p.supplier_id = s.supplier_id
+WHERE p.quantity < 10;
