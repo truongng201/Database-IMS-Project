@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
 
-export function Product({ product, categories, setError, setShowAlert }) {
+export function Product({ product, categories, setError, setShowAlert, suppliers, user, warehouses }) {
   const [showModal, setShowModal] = useState(false);
   const modalRef = useRef();
 
@@ -38,7 +38,7 @@ export function Product({ product, categories, setError, setShowAlert }) {
   }
 
   // Helper to crop description to 120 characters
-  function cropDescription(desc) {
+  function cropText(desc) {
     if (!desc) return "";
     const maxChars = 30;
     if (desc.length <= maxChars) return desc;
@@ -135,8 +135,8 @@ export function Product({ product, categories, setError, setShowAlert }) {
       <TableCell className="font-medium">
         {formatProductId(product.product_id)}
       </TableCell>
-      <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell>{cropDescription(product.description)}</TableCell>
+      <TableCell className="font-medium">{cropText(product.name)}</TableCell>
+      <TableCell>{cropText(product.description)}</TableCell>
       <TableCell className="hidden md:table-cell">{`$${product.price}`}</TableCell>
       <TableCell className="hidden md:table-cell">{product.quantity}</TableCell>
       <TableCell className="hidden md:table-cell">
@@ -281,15 +281,16 @@ export function Product({ product, categories, setError, setShowAlert }) {
                       </label>
                       <select
                         id="category"
-                        name="category"
-                        value={editValues.category}
+                        name="category_id"
+                        value={editValues.category_id}
                         onChange={handleInputChange}
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                       >
-                        {categories.map((category) => (
+                        <option value="">Select category</option>
+                        {categories && categories.map((category) => (
                           <option
                             key={category.category_id}
-                            value={category.id}
+                            value={category.category_id}
                           >
                             {category.name}
                           </option>
@@ -338,15 +339,23 @@ export function Product({ product, categories, setError, setShowAlert }) {
                       >
                         Supplier
                       </label>
-                      <input
-                        type="text"
-                        name="supplier"
+                      <select
+                        name="supplier_id"
                         id="supplier"
-                        value={editValues.supplier}
+                        value={editValues.supplier_id}
                         onChange={handleInputChange}
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                        placeholder="Supplier name"
-                      />
+                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+                      >
+                        <option value="">Select supplier</option>
+                        {suppliers && suppliers.map((supplier) => (
+                          <option
+                            key={supplier.supplier_id}
+                            value={supplier.supplier_id}
+                          >
+                            {supplier.supplier_name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                   <button

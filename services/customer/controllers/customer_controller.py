@@ -8,8 +8,14 @@ class CustomerController:
     def __init__(self):
         self.db = Database()
 
-    def get_all_customers(self):
-        result = self.db.execute_query(CustomerQueries.GET_ALL_CUSTOMERS)
+    def get_all_customers(self, search: str = None):
+        search = search.strip() if search else None
+        if search and not isinstance(search, str):
+            raise InvalidDataException("Search must be a string")
+        if search:
+            result = self.db.execute_query(CustomerQueries.GET_ALL_CUSTOMERS_BY_SEARCH, (search, search, search))
+        else:
+            result = self.db.execute_query(CustomerQueries.GET_ALL_CUSTOMERS)
         self.db.close_pool()
         customers = []
         for row in result:
@@ -70,7 +76,7 @@ class CustomerController:
         # Create new customer
         self.db.execute_query(
             CustomerQueries.CREATE_CUSTOMER,
-            (customer["name"], customer["phone"])
+            (customer["name"], customer["email"], customer["phone"], customer.get("address", ""))
         )
         self.db.close_pool()
         
@@ -115,7 +121,9 @@ class CustomerController:
         if not existing:
             self.db.close_pool()
             raise NotFoundException(f"Customer with ID {customer_id} not found")
-
+        if existing[0][6] > 0:
+            self.db.close_pool()
+            raise InvalidDataException("Cannot delete customer with existing orders")
         # Delete customer
         self.db.execute_query(CustomerQueries.DELETE_CUSTOMER, (customer_id,))
         self.db.close_pool()

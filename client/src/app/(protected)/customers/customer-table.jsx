@@ -19,7 +19,7 @@ import { Customer } from './customer';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function CustomersTable({ customers, offset, setOffset, totalCustomers, limit = 10 }) {
+export function CustomersTable({ customers, offset, setOffset, totalCustomers, limit = 10, setError, setShowAlert }) {
   function prevPage(e) {
     e.preventDefault();
     if (offset - limit >= 0) setOffset(offset - limit);
@@ -50,7 +50,7 @@ export function CustomersTable({ customers, offset, setOffset, totalCustomers, l
           </TableHeader>
           <TableBody>
             {customers.map((customer) => (
-              <Customer key={customer.customer_id || customer.id} customer={customer} />
+              <Customer key={customer.customer_id || customer.id} customer={customer} setError={setError} setShowAlert={setShowAlert} />
             ))}
             {customers.length === 0 && (
               <TableRow>

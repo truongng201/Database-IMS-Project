@@ -1,16 +1,17 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from controllers import CustomerController
 from models import CustomerData
 from shared_config import StandardResponse, standard_response
 from shared_utils import login_required
+from typing import Optional
 
 router = APIRouter()
 
 @router.get("/get-all-customers", response_model=StandardResponse)
 @standard_response
-def get_all_customers(user_id: int = Depends(login_required)):
+def get_all_customers(search: Optional[str] = Query(None), user_id: int = Depends(login_required)):
     controller = CustomerController()
-    response = controller.get_all_customers()
+    response = controller.get_all_customers(search=search)
     return response
 
 @router.get("/get-customer/{customer_id}", response_model=StandardResponse)

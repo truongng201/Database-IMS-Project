@@ -21,7 +21,7 @@ export function Order({ order, onClick }) {
   };
 
   // Format order ID as O0001
-  const formatOrderId = (id) => `O${String(id).padStart(4, '0')}`;
+  const formatOrderId = (id) => `ORD-${String(id).padStart(4, '0')}`;
 
   // Format date safely
   const formatDate = (dateString) => {

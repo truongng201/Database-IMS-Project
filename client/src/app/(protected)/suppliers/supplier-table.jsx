@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export function SupplierTable({ suppliers, offset, setOffset, totalSuppliers, limit = 10 }) {
+export function SupplierTable({ suppliers, offset, setOffset, totalSuppliers, limit = 10, setError, setShowAlert }) {
   const suppliersPerPage = 5;
   // Always show the correct 5 suppliers from the current chunk
   const paginatedSuppliers = suppliers.slice(offset % limit, (offset % limit) + suppliersPerPage);
@@ -72,6 +72,9 @@ export function SupplierTable({ suppliers, offset, setOffset, totalSuppliers, li
               <Supplier
                 key={supplier.supplier_id}
                 supplier={supplier}
+                setError={setError}
+                setShowAlert={setShowAlert}
+                onClick={() => router.push(`/suppliers/${supplier.supplier_id}`)}
               />
             ))}
             {suppliers.length === 0 && (

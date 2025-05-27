@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from controllers import *
 from models import *
 from shared_config import StandardResponse, standard_response
@@ -7,9 +7,19 @@ router = APIRouter()
 
 @router.get("/get-all-products", response_model=StandardResponse)
 @standard_response
-def get_all_products(limit: int, offset: int, user_info: dict = Depends(login_required)):
+def get_all_products(
+    limit: int, 
+    offset: int, 
+    search: str = Query(None, description="Search by product name, category name, or supplier name"),
+    user_info: dict = Depends(login_required)
+):
     controller = GetAllProductController()
-    response = controller.execute(limit=limit, offset=offset, user_info=user_info)
+    response = controller.execute(
+        limit=limit, 
+        offset=offset, 
+        user_info=user_info,
+        search=search
+    )
     return {"products": response.products}
 
 @router.get("/get-product/{product_id}", response_model=StandardResponse)
@@ -62,7 +72,10 @@ def get_products_by_category(category_id: int, user_info: dict = Depends(login_r
 
 @router.get("/count-total-products", response_model=StandardResponse)
 @standard_response
-def count_total_products(user_info: dict = Depends(login_required)):
+def count_total_products(
+    search: str = Query(None, description="Search by product name, category name, or supplier name"),
+    user_info: dict = Depends(login_required)
+):
     controller = CountTotalProductsController()
-    response = controller.execute(user_info)
+    response = controller.execute(user_info, search=search)
     return response
