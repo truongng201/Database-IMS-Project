@@ -8,8 +8,8 @@ NUM_SUPPLIERS = 100
 NUM_WAREHOUSES = 5
 NUM_PRODUCTS = 1000
 NUM_CUSTOMERS = 100
-NUM_ORDERS = 100
-NUM_ORDER_ITEMS = 100
+NUM_ORDERS = 1000
+NUM_ORDER_ITEMS = 1000
 
 categories = [
     ["Electronics", "Devices, gadgets, and accessories."],
@@ -50,9 +50,7 @@ for _ in range(NUM_WAREHOUSES):
 
 # Users
 sql_statements.append(f"INSERT INTO users (username, email, password_hash, role_name, warehouse_id, is_active, image_url) "
-                      f"VALUES ('admin', 'admin@admin.com', '21232f297a57a5a743894a0e4a801fc3', 'admin', 1, TRUE, 'https://api.dicebear.com/9.x/identicon/svg?seed=admin');")
-sql_statements.append(f"INSERT INTO users (username, email, password_hash, role_name, warehouse_id, is_active, image_url) "
-                      f"VALUES ('user1', 'user1@user.com', 'e6b84c1a1799a801a69781ed37986eb1', 'staff', 1, FALSE, 'https://api.dicebear.com/9.x/identicon/svg?seed=user1');")
+                      f"VALUES ('admin', 'admin@admin.com', '$2b$12$MhPoat8o/LgpoL2spnBagetd5YPqa1HwP6dzRpGg4O1PQ8mwMLQSy', 'admin', 1, TRUE, 'https://api.dicebear.com/9.x/identicon/svg?seed=admin');")
 
 # Customers
 for _ in range(NUM_CUSTOMERS):
@@ -64,49 +62,91 @@ for _ in range(NUM_CUSTOMERS):
                           f"VALUES ('{name}', '{email}', '{phone}', '{address}');")
 
 # Products
-for _ in range(NUM_PRODUCTS):
+product_warehouse_map = {}  # Maps product_id to warehouse_id
+warehouse_product_counts = {i: 0 for i in range(1, NUM_WAREHOUSES + 1)}  # Track products per warehouse
+for product_id in range(1, NUM_PRODUCTS + 1):
     name = faker.word().capitalize().replace("'", "''")
     description = faker.sentence().replace("'", "''")
     price = round(random.uniform(5.0, 1000.0), 2)
     quantity = random.randint(0, 500)
     supplier_id = random.randint(1, NUM_SUPPLIERS)
-    warehouse_id = random.randint(1, NUM_WAREHOUSES)
+    # Distribute products evenly across warehouses
+    warehouse_id = (product_id % NUM_WAREHOUSES) + 1
+    warehouse_product_counts[warehouse_id] += 1
     category_id = random.randint(1, len(categories))
     image_url = f"https://api.dicebear.com/9.x/identicon/svg?seed={name}"
+    product_warehouse_map[product_id] = warehouse_id
     sql_statements.append(f"INSERT INTO products (name, description, price, quantity, supplier_id, warehouse_id, category_id, image_url) "
                           f"VALUES ('{name}', '{description}', {price}, {quantity}, {supplier_id}, {warehouse_id}, {category_id}, '{image_url}');")
 
 # Orders
-for _ in range(NUM_ORDERS):
+order_warehouse_map = {}  # Maps order_id to warehouse_id (in memory only)
+for order_id in range(1, NUM_ORDERS + 1):
     customer_id = random.randint(1, NUM_CUSTOMERS)
     status = random.choice(['pending', 'completed', 'cancelled'])
-    sql_statements.append(f"INSERT INTO orders (customer_id, status) VALUES ({customer_id}, '{status}');")
+    # Assign a random warehouse to each order (not stored in DB)
+    warehouse_id = random.randint(1, NUM_WAREHOUSES)
+    order_warehouse_map[order_id] = warehouse_id
+    sql_statements.append(f"INSERT INTO orders (customer_id, status) "
+                          f"VALUES ({customer_id}, '{status}');")
 
 # Order Items
-order_item_ids = []
-for i in range(NUM_ORDER_ITEMS):
-    order_id = random.randint(1, NUM_ORDERS)
+order_item_to_order = {}  # Maps order_item_id to order_id
+order_item_id = 1
+
+# Step 1: Ensure each order has at least one order_item
+for order_id in range(1, NUM_ORDERS + 1):
+    order_item_to_order[order_item_id] = order_id
     sql_statements.append(f"INSERT INTO order_items (order_id) VALUES ({order_id});")
-    order_item_ids.append(i + 1)
+    order_item_id += 1
+
+# Step 2: Distribute remaining order_items (if any) randomly
+remaining_items = NUM_ORDER_ITEMS - NUM_ORDERS
+if remaining_items > 0:
+    for _ in range(remaining_items):
+        order_id = random.randint(1, NUM_ORDERS)
+        order_item_to_order[order_item_id] = order_id
+        sql_statements.append(f"INSERT INTO order_items (order_id) VALUES ({order_id});")
+        order_item_id += 1
 
 # Product Order Items
 used_combinations = set()
-for _ in range(NUM_ORDER_ITEMS):
-    while True:
-        product_id = random.randint(1, NUM_PRODUCTS)
-        order_item_id = random.choice(order_item_ids)
+max_attempts = NUM_ORDER_ITEMS * 10  # Safeguard to prevent infinite loop
+attempt = 0
+
+for order_item_id in range(1, NUM_ORDER_ITEMS + 1):
+    while attempt < max_attempts:
+        order_id = order_item_to_order[order_item_id]
+        warehouse_id = order_warehouse_map[order_id]
+        available_products = [pid for pid, wid in product_warehouse_map.items() if wid == warehouse_id]
+        
+        if not available_products:
+            attempt += 1
+            continue
+        
+        product_id = random.choice(available_products)
         combination = (product_id, order_item_id)
         if combination not in used_combinations:
             used_combinations.add(combination)
+            quantity = random.randint(1, 10)
+            # Get product price for accurate total_price
+            for stmt in sql_statements:
+                if f"INSERT INTO products" in stmt and f"VALUES ('{product_id}'," in stmt:
+                    price = float(stmt.split(',')[3].strip())
+                    break
+            total_price = round(quantity * price, 2)
+            sql_statements.append(f"INSERT INTO product_order_items (product_id, order_item_id, quantity, total_price) "
+                                  f"VALUES ({product_id}, {order_item_id}, {quantity}, {total_price});")
             break
-    quantity = random.randint(1, 10)
-    total_price = round(random.uniform(5.0, 1000.0), 2)
-    sql_statements.append(f"INSERT INTO product_order_items (product_id, order_item_id, quantity, total_price) "
-                          f"VALUES ({product_id}, {order_item_id}, {quantity}, {total_price});")
-
+        attempt += 1
+    
+    if attempt >= max_attempts:
+        print(f"Warning: Could not find unique combination for order_item_id {order_item_id} after {max_attempts} attempts. Skipping.")
+        break
 
 # Write to SQL file
 with open("./ims-database/init-scripts/init-db2.sql", "w", encoding="utf-8") as f:
     f.write("\n".join(sql_statements))
 
 print("Fake data generated and written to init-db2.sql")
+print("Product distribution per warehouse:", warehouse_product_counts)

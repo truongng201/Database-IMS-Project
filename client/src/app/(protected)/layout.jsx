@@ -210,7 +210,7 @@ function DashboardBreadcrumb() {
   return (
     <Breadcrumb className="hidden md:flex">
       <BreadcrumbList>
-        <BreadcrumbItem>
+        <BreadcrumbItem key="dashboard">
           <BreadcrumbLink asChild>
             <Link href="/">Dashboard</Link>
           </BreadcrumbLink>
