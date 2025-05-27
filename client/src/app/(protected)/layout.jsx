@@ -33,7 +33,7 @@ import { NavItem } from "./nav-item";
 import { SearchInput } from "./search";
 import { User } from "./user";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 
 export default function DashboardLayout({ children }) {
   return (
@@ -44,7 +44,9 @@ export default function DashboardLayout({ children }) {
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <MobileNav />
             <DashboardBreadcrumb />
-            <SearchInput />
+            <Suspense fallback={<div className="w-full rounded-lg bg-background pl-8 pr-8 md:w-[200px] lg:w-[336px] h-9 animate-pulse"></div>}>
+              <SearchInput />
+            </Suspense>
             <User />
           </header>
           <main className="grid flex-1 items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-4 bg-muted/40">
