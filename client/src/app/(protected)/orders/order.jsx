@@ -11,9 +11,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { formatCurrency } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
 
 export function Order({ order, onClick, setError, setShowAlert, onStatusUpdate }) {
   const router = useRouter()
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const modalRef = useRef();
+  
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
     completed: 'bg-green-100 text-green-800',
@@ -52,6 +56,44 @@ export function Order({ order, onClick, setError, setShowAlert, onStatusUpdate }
       }
     } catch (error) {
       setError("Error updating order status");
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+    }
+  };
+
+  const deleteOrder = async (orderId) => {
+    try {
+      const access_token = localStorage.getItem("access_token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/delete-order/${orderId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData?.message || "Failed to delete order");
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+        return;
+      }
+
+      setError(`Order ${formatOrderId(orderId)} deleted successfully!`);
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+      
+      // Close modal and call parent component to refresh data
+      setShowDeleteModal(false);
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+    } catch (error) {
+      setError("Error deleting order");
       setShowAlert(true);
       setTimeout(() => setShowAlert(false), 3000);
     }
@@ -154,9 +196,103 @@ export function Order({ order, onClick, setError, setShowAlert, onStatusUpdate }
             >
               Cancel order
             </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDeleteModal(true);
+              }}
+              className="text-red-600 hover:text-red-700 focus:text-red-700"
+            >
+              Delete order
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
+      
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <td>
+          <div
+            key={order.order_id + "-delete-modal"}
+            id="delete-modal"
+            tabIndex={-1}
+            aria-hidden={!showDeleteModal}
+            ref={modalRef}
+            className="overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-black bg-opacity-40"
+          >
+            <div className="relative p-4 w-full max-w-md max-h-full">
+              <div className="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+                <div className="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Delete Order {formatOrderId(order.order_id)}
+                  </h3>
+                  <button
+                    type="button"
+                    className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                    onClick={() => setShowDeleteModal(false)}
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 14 14"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                      />
+                    </svg>
+                    <span className="sr-only">Close modal</span>
+                  </button>
+                </div>
+                <div className="p-4 md:p-5">
+                  <div className="text-center">
+                    <svg
+                      className="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                      />
+                    </svg>
+                    <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                      Are you sure you want to delete order {formatOrderId(order.order_id)}?
+                    </h3>
+                    <p className="mb-5 text-sm text-gray-500 dark:text-gray-400">
+                      This action cannot be undone.
+                    </p>
+                    <div className="flex justify-center gap-4">
+                      <button
+                        onClick={() => deleteOrder(order.order_id)}
+                        className="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center"
+                      >
+                        Yes, I'm sure
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteModal(false)}
+                        className="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+                      >
+                        No, cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </td>
+      )}
     </TableRow>
   );
 } 

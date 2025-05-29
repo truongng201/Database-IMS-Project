@@ -41,7 +41,7 @@ def update_order(order_id: int, order: OrderData, user_info: int = Depends(login
 @standard_response
 def delete_order(order_id: int, user_info: int = Depends(login_required)):
     controller = OrderController()
-    response = controller.delete_order(order_id, user_info)
+    response = controller.delete_order(order_id)
     return response
 
 @router.post("/update-order-status", response_model=StandardResponse)

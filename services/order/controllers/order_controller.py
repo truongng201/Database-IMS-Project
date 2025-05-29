@@ -203,179 +203,98 @@ class OrderController:
         return order_data
 
     def create_order(self, order: dict):
-        connection = None
-        cursor = None
+        product_ids = []
+        quantities = []
+        prices = []
         
-        try:
-            # Get a direct connection instead of using the pool
-            connection = self.db.pool.get_connection()
-            cursor = connection.cursor()
-            
-            # Start transaction
-            cursor.execute("START TRANSACTION")
-            logger.info(f"Creating order for customer ID {order['customer_id']}")
-
-            # Create order
-            insert_order_query = "INSERT INTO orders (customer_id, status) VALUES (%s, %s)"
-            cursor.execute(insert_order_query, (
-                order["customer_id"],
-                order.get("status", "pending")
-            ))
-            
-            # Get the last inserted order ID immediately
-            order_id = cursor.lastrowid
-            if not order_id:
-                connection.rollback()
-                raise HTTPException(status_code=500, detail="Failed to retrieve created order ID")
-                
-            logger.info(f"Created order with ID {order_id}")
-
-            # Create order items
-            for item in order["items"]:
-                # Create order item first
-                insert_order_item_query = "INSERT INTO order_items (order_id) VALUES (%s)"
-                cursor.execute(insert_order_item_query, (order_id,))
-                
-                # Get the last inserted order item ID immediately
-                order_item_id = cursor.lastrowid
-                if not order_item_id:
-                    connection.rollback()
-                    raise HTTPException(status_code=500, detail="Failed to retrieve created order item ID")
-                    
-                logger.info(f"Created order item with ID {order_item_id}")
-                
-                # Then link product to the order item
-                insert_product_query = """
-                    INSERT INTO product_order_items 
-                    (product_id, order_item_id, quantity, total_price) 
-                    VALUES (%s, %s, %s, %s)
-                """
-                cursor.execute(insert_product_query, (
-                    item["product_id"],
-                    order_item_id,
-                    item["quantity"],
-                    float(item["price"]) * float(item["quantity"])  # Calculate total price
-                ))
-
-            # Commit transaction
-            connection.commit()
-            logger.info(f"Order {order_id} created successfully")
-
-            # Get the created order with items
-            created_order = self.get_order(order_id)
-            return OrderResponse(
-                status="Success",
-                data=created_order.data,
-                message="Order created successfully !"
-            )
-        except HTTPException as e:
-            logger.error(f"HTTP Exception: {str(e)}")
-            if connection:
-                connection.rollback()
-            raise
-        except Exception as e:
-            logger.error(f"Error creating order: {str(e)}")
-            if connection:
-                connection.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
-        finally:
-            if cursor:
-                cursor.close()
-            if connection:
-                connection.close()
+        for item in order["items"]:
+            product_ids.append(str(item["product_id"]))
+            quantities.append(str(item["quantity"]))
+            prices.append(str(item["price"]))
+        
+        # Convert lists to comma-separated strings
+        product_ids_str = ','.join(product_ids)
+        quantities_str = ','.join(quantities)
+        prices_str = ','.join(prices)
+        
+        logger.info(f"Calling CreateOrder procedure with: customer_id={order['customer_id']}, "
+                    f"product_ids={product_ids_str}, quantities={quantities_str}, prices={prices_str}")
+        
+        # Call the CreateOrder stored procedure
+        res = self.db.execute_query(OrderQueries.CREATE_ORDER_PROCEDURE, (
+            order["customer_id"],
+            product_ids_str,
+            quantities_str,
+            prices_str
+        ))
+        self.db.close_pool()
+        if res is None:
+            logger.error("Failed to create order in the database")
+            raise Exception("Failed to create order in the database")
+        
+        return {}
+      
 
     def update_order(self, order_id: int, order: OrderData):
-        try:
-            # Check if order exists
-            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
-            if not result:
-                return OrderResponse(
-                    status="Success",
-                    data={},
-                    message=f"Order with ID {order_id} not found"
-                )
-            
-            # We'll just update the order status for simplicity
-            # In a real application, you might want to update items as well
-            
-            # Start transaction
-            self.db.execute_query("START TRANSACTION;")
-            logger.info(f"Updating order with ID {order_id}")
-            
-            # Update order status
-            update_query = """
-                UPDATE orders SET status = %s WHERE order_id = %s
-            """
-            self.db.execute_query(update_query, (order.status, order_id))
-            
-            # Commit transaction
-            self.db.execute_query("COMMIT;")
-            logger.info(f"Order {order_id} updated successfully")
-            
-            # Get updated order
-            updated_order = self.get_order(order_id)
-            return OrderResponse(
-                status="Success",
-                data=updated_order.data,
-                message=f"Order with ID {order_id} updated successfully"
-            )
-        except Exception as e:
-            self.db.execute_query("ROLLBACK;")
-            logger.error(f"Error updating order: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
+        result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
+        if not result:
+            raise NotFoundException(f"Order with ID {order_id} not found")
+        
+        # We'll just update the order status for simplicity
+        # In a real application, you might want to update items as well
+        
+        # Start transaction
+        self.db.execute_query("START TRANSACTION;")
+        logger.info(f"Updating order with ID {order_id}")
+        
+        # Update order status
+        update_query = """
+            UPDATE orders SET status = %s WHERE order_id = %s
+        """
+        res = self.db.execute_query(update_query, (order.status, order_id))
+        
+        logger.info(f"Updated order {order_id} status to {order.status}")
+        if res is None:
+            raise Exception("Failed to update order status in the database")
+        return {}
+        
             
     def delete_order(self, order_id: int):
-        try:
-            # Check if order exists
-            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
-            if not result:
-                return OrderResponse(
-                    status="Success",
-                    data={},
-                    message=f"Order with ID {order_id} not found or already deleted"
-                )
-            
-            # Start transaction
-            self.db.execute_query("START TRANSACTION;")
-            logger.info(f"Deleting order with ID {order_id}")
-            
-            # We need to delete in the correct order due to foreign key constraints
-            # First, find all order items
-            order_items_result = self.db.execute_query("""
-                SELECT order_item_id FROM order_items WHERE order_id = %s
-            """, (order_id,))
-            
-            # Delete from product_order_items first (for each order item)
-            for row in order_items_result:
-                order_item_id = row[0]
-                self.db.execute_query("""
-                    DELETE FROM product_order_items WHERE order_item_id = %s
-                """, (order_item_id,))
-                logger.info(f"Deleted product links for order item {order_item_id}")
-            
-            # Then delete from order_items
-            self.db.execute_query(OrderQueries.DELETE_ORDER_ITEMS, (order_id,))
-            logger.info(f"Deleted all items for order {order_id}")
-            
-            # Finally delete the order
-            self.db.execute_query(OrderQueries.DELETE_ORDER, (order_id,))
-            logger.info(f"Deleted order {order_id}")
-            
-            # Commit the transaction
-            self.db.execute_query("COMMIT;")
-            
-            return OrderResponse(
-                status="Success",
-                data={},
-                message=f"Order with ID {order_id} deleted successfully"
-            )
-        except Exception as e:
-            self.db.execute_query("ROLLBACK;")
-            logger.error(f"Error deleting order: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
+        result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
+        if not result:
+            raise NotFoundException(f"Order with ID {order_id} not found")
+        
+        # We need to delete in the correct order due to foreign key constraints
+        # First, find all order items
+        order_items_result = self.db.execute_query("""
+            SELECT order_item_id FROM order_items WHERE order_id = %s
+        """, (order_id,))
+        
+        # Delete from product_order_items first (for each order item)
+        for row in order_items_result:
+            order_item_id = row[0]
+            self.db.execute_query("""
+                DELETE FROM product_order_items WHERE order_item_id = %s
+            """, (order_item_id,))
+            logger.info(f"Deleted product links for order item {order_item_id}")
+        
+        # Then delete from order_items
+        res = self.db.execute_query(OrderQueries.DELETE_ORDER_ITEMS, (order_id,))
+        logger.info(f"Deleted all items for order {order_id}")
+        if res is None:
+            self.db.close_pool()
+            raise Exception("Failed to delete order items from the database")
+        # Finally delete the order
+        res = self.db.execute_query(OrderQueries.DELETE_ORDER, (order_id,))
+        logger.info(f"Deleted order {order_id}")
+        self.db.close_pool()
+        if res is None:
+            raise Exception("Failed to delete order from the database")
+
+        return {}
+
 
     def update_order_status(self, order_id: int, status: str):
-        
         # Validate input
         if order_id <= 0:
             raise BadRequestException("Invalid order ID")
@@ -396,4 +315,3 @@ class OrderController:
             raise Exception("Failed to update order status")
         
         return f"Order {order_id} status updated to {status}"
-        
