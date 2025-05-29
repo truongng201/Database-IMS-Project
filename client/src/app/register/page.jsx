@@ -20,7 +20,6 @@ export default function RegisterPage() {
     const username = formData.get("username");
     const email = formData.get("email");
     const password = formData.get("password");
-    console.log(username, email, password);
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/register`,
@@ -33,7 +32,6 @@ export default function RegisterPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.log(errorData);
         setError(errorData.message);
         setShowAlert(true);
 

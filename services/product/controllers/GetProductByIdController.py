@@ -14,7 +14,6 @@ class GetProductByIdController:
         self.query.close()
         if not response:
             raise NotFoundException("Product not found")
-        print(f"Product found with ID: {response}")
         # Convert Decimal to float for price if needed
         price = float(response.get("price")) if response.get("price") is not None else None
         return ProductModel(
