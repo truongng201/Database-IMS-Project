@@ -9,10 +9,9 @@ class MonthlySalesController:
         try:
             # Determine warehouse access based on user role
             warehouse_id = None
-            if user_info.get('role') == 'staff':
+            if user_info.get('role_name') == 'staff':
                 warehouse_id = user_info.get('warehouse_id')
             # Admin users (role='admin') can see all warehouses (warehouse_id=None)
-            
             # Get monthly sales data
             monthly_sales_data = self.query.get_monthly_sales_summary(warehouse_id)
             self.query.close()
