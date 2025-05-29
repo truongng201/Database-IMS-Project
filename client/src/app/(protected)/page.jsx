@@ -12,16 +12,37 @@ import { useState, useEffect } from "react";
 
 function Dashboard() {
   const [recentOrders, setRecentOrders] = useState([]);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  console.log(dashboardStats)
   useEffect(() => {
-    const fetchRecentOrders = async () => {
+    const fetchDashboardData = async () => {
       try {
         setLoading(true);
         const access_token = localStorage.getItem("access_token");
         
-        const response = await fetch(
+        // Fetch dashboard statistics
+        const statsResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/user/dashboard-stats`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${access_token}`,
+            },
+          }
+        );
+        
+        if (!statsResponse.ok) {
+          throw new Error("Failed to fetch dashboard statistics");
+        }
+        
+        const statsData = await statsResponse.json();
+        setDashboardStats(statsData?.data || null);
+
+        // Fetch recent orders
+        const ordersResponse = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/recent-completed`,
           {
             method: "GET",
@@ -32,21 +53,21 @@ function Dashboard() {
           }
         );
         
-        if (!response.ok) {
+        if (!ordersResponse.ok) {
           throw new Error("Failed to fetch recent orders");
         }
         
-        const data = await response.json();
-        setRecentOrders(data?.data || []);
+        const ordersData = await ordersResponse.json();
+        setRecentOrders(ordersData?.data || []);
       } catch (error) {
-        console.error("Error fetching recent orders:", error);
+        console.error("Error fetching dashboard data:", error);
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRecentOrders();
+    fetchDashboardData();
   }, []);
 
   // Format order ID as ORD-0001
@@ -59,6 +80,19 @@ function Dashboard() {
       currency: 'USD'
     }).format(amount || 0);
   };
+
+  // Format percentage change
+  const formatPercentage = (value) => {
+    if (value === null || value === undefined) return "N/A";
+    const sign = value >= 0 ? "+" : "";
+    return `${sign}${value.toFixed(1)}%`;
+  };
+
+  // Get percentage color class
+  const getPercentageColor = (value) => {
+    if (value === null || value === undefined) return "text-muted-foreground";
+    return value > 0 ? "text-green-600" : value < 0 ? "text-red-600" : "text-muted-foreground";
+  };
   return (
     <div className="space-y-4 p-8 pt-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -68,8 +102,12 @@ function Dashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
-            <p className="text-xs text-muted-foreground">+20.1% from last month</p>
+            <div className="text-2xl font-bold">
+              {loading ? "Loading..." : dashboardStats?.revenue?.total ? formatCurrency(dashboardStats.revenue.total) : "N/A"}
+            </div>
+            <p className={`text-xs ${getPercentageColor(dashboardStats?.revenue?.month_over_month_change)}`}>
+              {loading ? "..." : formatPercentage(dashboardStats?.revenue?.month_over_month_change)} from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -78,8 +116,12 @@ function Dashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+235</div>
-            <p className="text-xs text-muted-foreground">+12.5% from last month</p>
+            <div className="text-2xl font-bold">
+              {loading ? "Loading..." : dashboardStats?.products?.total !== undefined ? dashboardStats.products.total.toLocaleString() : "N/A"}
+            </div>
+            <p className={`text-xs ${getPercentageColor(dashboardStats?.products?.month_over_month_change)}`}>
+              {loading ? "..." : formatPercentage(dashboardStats?.products?.month_over_month_change)} from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -88,8 +130,12 @@ function Dashboard() {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
-            <p className="text-xs text-muted-foreground">+8.2% from last month</p>
+            <div className="text-2xl font-bold">
+              {loading ? "Loading..." : dashboardStats?.orders?.total !== undefined ? dashboardStats.orders.total.toLocaleString() : "N/A"}
+            </div>
+            <p className={`text-xs ${getPercentageColor(dashboardStats?.orders?.month_over_month_change)}`}>
+              {loading ? "..." : formatPercentage(dashboardStats?.orders?.month_over_month_change)} from last month
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -98,8 +144,12 @@ function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+249</div>
-            <p className="text-xs text-muted-foreground">+4.1% from last month</p>
+            <div className="text-2xl font-bold">
+              {loading ? "Loading..." : dashboardStats?.customers?.total !== undefined ? dashboardStats.customers.total.toLocaleString() : "N/A"}
+            </div>
+            <p className={`text-xs ${getPercentageColor(dashboardStats?.customers?.month_over_month_change)}`}>
+              {loading ? "..." : formatPercentage(dashboardStats?.customers?.month_over_month_change)} from last month
+            </p>
           </CardContent>
         </Card>
       </div>

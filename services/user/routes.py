@@ -83,3 +83,10 @@ def deactivate_user(user_id: int, user_info: dict = Depends(login_required)):
     controller = DeactivateUserController()
     controller.execute(user_id, user_info)
     return {}
+
+@router.get("/dashboard-stats", response_model=StandardResponse)
+@standard_response
+def get_dashboard_stats(user_info: dict = Depends(login_required)):
+    controller = DashboardStatsController()
+    response = controller.execute(user_info)
+    return response
