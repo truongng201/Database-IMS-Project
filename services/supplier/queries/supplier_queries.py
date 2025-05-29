@@ -25,7 +25,7 @@ class SupplierQueries:
         AND (LOWER(supplier_name) LIKE LOWER(CONCAT('%%', %s, '%%'))
         OR LOWER(contact_name) LIKE LOWER(CONCAT('%%', %s, '%%'))
         OR LOWER(contact_email) LIKE LOWER(CONCAT('%%', %s, '%%'))
-        OR LOWER(phone) LIKE LOWER(CONCAT('%%', %s, '%%'))
+        OR LOWER(phone) LIKE LOWER(CONCAT('%%', %s, '%%')))
         ORDER BY supplier_updated_time DESC, supplier_id ASC;
     """
     
@@ -61,4 +61,3 @@ class SupplierQueries:
         DELETE FROM suppliers
         WHERE supplier_id = %s;
     """
-    

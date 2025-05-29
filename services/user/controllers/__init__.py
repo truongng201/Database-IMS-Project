@@ -8,3 +8,5 @@ from .ActivateUserController import ActivateUserController
 from .GetAllUsersController import GetAllUsersController
 from .GetAllWarehousesController import GetAllWarehousesController
 from .DeactivateUserController import DeactivateUserController
+from .DashboardStatsController import DashboardStatsController
+from .MonthlySalesController import MonthlySalesController

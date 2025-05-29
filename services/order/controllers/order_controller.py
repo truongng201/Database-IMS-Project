@@ -48,7 +48,7 @@ class OrderController:
         logger.info(f"Formatted order {order_data['order_id']} with {len(order_data['items'])} items")
         return order_data
 
-    def get_all_orders(self, user_info):
+    def get_all_orders(self, user_info, search=None):
         warehouse_id = user_info.get("warehouse_id")
         role_name = user_info.get("role_name")
         if not warehouse_id:
@@ -56,8 +56,19 @@ class OrderController:
         if role_name not in ["admin", "staff"]:
             raise BadRequestException("Only admin and staff can retrieve orders")
         
+        # Handle search parameter - extract number from ORD-1000 format
+        search_param = None
+        if search:
+            if search.startswith("ORD-"):
+                search_param = f"%{search[4:]}%"  # Extract number part
+            else:
+                search_param = f"%{search}%"
+        
         if role_name == "admin":
-            result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS)
+            if search_param:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_WITH_SEARCH, (search_param, search_param))
+            else:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS)
             print(result)
             self.db.close_pool()
             if result is None:
@@ -86,7 +97,10 @@ class OrderController:
             
         
         if role_name == "staff":
-            result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_BY_WAREHOUSE, (warehouse_id,))
+            if search_param:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_BY_WAREHOUSE_WITH_SEARCH, (warehouse_id, search_param, search_param))
+            else:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_BY_WAREHOUSE, (warehouse_id,))
             self.db.close_pool()
             if result is None:
                 raise Exception("Failed to retrieve orders from the database")
@@ -126,7 +140,7 @@ class OrderController:
         
         order_date = {}
         if role_name == "staff":
-            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id, warehouse_id))
+            result = self.db.execute_query(OrderQueries.GET_ORDER_DETAIL_BY_WAREHOUSE, (order_id, warehouse_id))
             logger.info(f"Got result from database: {bool(result)}")
             if not result:
                 raise NotFoundException(f"Cannot found order with ID {order_id}")
@@ -138,7 +152,9 @@ class OrderController:
                 "customer_name": result[0][4],
                 "customer_email": result[0][5],
                 "customer_phone": result[0][6],
-                "items": []
+                "items": [],
+                "total_items": 0,
+                "total_price": 0
             }
             for row in result:
                 item = {
@@ -147,9 +163,11 @@ class OrderController:
                     "product_name": row[9],
                     "product_price": row[10],
                     "quantity_ordered": row[11],
-                    "total_price": row[12]
+                    "price": row[12]
                 }
                 order_data["items"].append(item)
+                order_data["total_items"] += 1
+                order_data["total_price"] += item["price"]
 
         if role_name == "admin":
             result = self.db.execute_query(OrderQueries.GET_ORDER_DETAIL, (order_id,))
@@ -185,173 +203,171 @@ class OrderController:
         return order_data
 
     def create_order(self, order: dict):
-        connection = None
-        cursor = None
+        product_ids = []
+        quantities = []
+        prices = []
         
-        try:
-            # Get a direct connection instead of using the pool
-            connection = self.db.pool.get_connection()
-            cursor = connection.cursor()
-            
-            # Start transaction
-            cursor.execute("START TRANSACTION")
-            logger.info(f"Creating order for customer ID {order['customer_id']}")
-
-            # Create order
-            insert_order_query = "INSERT INTO orders (customer_id, status) VALUES (%s, %s)"
-            cursor.execute(insert_order_query, (
-                order["customer_id"],
-                order.get("status", "pending")
-            ))
-            
-            # Get the last inserted order ID immediately
-            order_id = cursor.lastrowid
-            if not order_id:
-                connection.rollback()
-                raise HTTPException(status_code=500, detail="Failed to retrieve created order ID")
-                
-            logger.info(f"Created order with ID {order_id}")
-
-            # Create order items
-            for item in order["items"]:
-                # Create order item first
-                insert_order_item_query = "INSERT INTO order_items (order_id) VALUES (%s)"
-                cursor.execute(insert_order_item_query, (order_id,))
-                
-                # Get the last inserted order item ID immediately
-                order_item_id = cursor.lastrowid
-                if not order_item_id:
-                    connection.rollback()
-                    raise HTTPException(status_code=500, detail="Failed to retrieve created order item ID")
-                    
-                logger.info(f"Created order item with ID {order_item_id}")
-                
-                # Then link product to the order item
-                insert_product_query = """
-                    INSERT INTO product_order_items 
-                    (product_id, order_item_id, quantity, total_price) 
-                    VALUES (%s, %s, %s, %s)
-                """
-                cursor.execute(insert_product_query, (
-                    item["product_id"],
-                    order_item_id,
-                    item["quantity"],
-                    float(item["price"]) * float(item["quantity"])  # Calculate total price
-                ))
-
-            # Commit transaction
-            connection.commit()
-            logger.info(f"Order {order_id} created successfully")
-
-            # Get the created order with items
-            created_order = self.get_order(order_id)
-            return OrderResponse(
-                status="Success",
-                data=created_order.data,
-                message="Order created successfully !"
-            )
-        except HTTPException as e:
-            logger.error(f"HTTP Exception: {str(e)}")
-            if connection:
-                connection.rollback()
-            raise
-        except Exception as e:
-            logger.error(f"Error creating order: {str(e)}")
-            if connection:
-                connection.rollback()
-            raise HTTPException(status_code=500, detail=str(e))
-        finally:
-            if cursor:
-                cursor.close()
-            if connection:
-                connection.close()
+        for item in order["items"]:
+            product_ids.append(str(item["product_id"]))
+            quantities.append(str(item["quantity"]))
+            prices.append(str(item["price"]))
+        
+        # Convert lists to comma-separated strings
+        product_ids_str = ','.join(product_ids)
+        quantities_str = ','.join(quantities)
+        prices_str = ','.join(prices)
+        
+        logger.info(f"Calling CreateOrder procedure with: customer_id={order['customer_id']}, "
+                    f"product_ids={product_ids_str}, quantities={quantities_str}, prices={prices_str}")
+        
+        # Call the CreateOrder stored procedure
+        res = self.db.execute_query(OrderQueries.CREATE_ORDER_PROCEDURE, (
+            order["customer_id"],
+            product_ids_str,
+            quantities_str,
+            prices_str
+        ))
+        self.db.close_pool()
+        if res is None:
+            logger.error("Failed to create order in the database")
+            raise Exception("Failed to create order in the database")
+        
+        return {}
+      
 
     def update_order(self, order_id: int, order: OrderData):
-        try:
-            # Check if order exists
-            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
-            if not result:
-                return OrderResponse(
-                    status="Success",
-                    data={},
-                    message=f"Order with ID {order_id} not found"
-                )
-            
-            # We'll just update the order status for simplicity
-            # In a real application, you might want to update items as well
-            
-            # Start transaction
-            self.db.execute_query("START TRANSACTION;")
-            logger.info(f"Updating order with ID {order_id}")
-            
-            # Update order status
-            update_query = """
-                UPDATE orders SET status = %s WHERE order_id = %s
-            """
-            self.db.execute_query(update_query, (order.status, order_id))
-            
-            # Commit transaction
-            self.db.execute_query("COMMIT;")
-            logger.info(f"Order {order_id} updated successfully")
-            
-            # Get updated order
-            updated_order = self.get_order(order_id)
-            return OrderResponse(
-                status="Success",
-                data=updated_order.data,
-                message=f"Order with ID {order_id} updated successfully"
-            )
-        except Exception as e:
-            self.db.execute_query("ROLLBACK;")
-            logger.error(f"Error updating order: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e))
+        result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
+        if not result:
+            raise NotFoundException(f"Order with ID {order_id} not found")
+        
+        # We'll just update the order status for simplicity
+        # In a real application, you might want to update items as well
+        
+        # Start transaction
+        self.db.execute_query("START TRANSACTION;")
+        logger.info(f"Updating order with ID {order_id}")
+        
+        # Update order status
+        update_query = """
+            UPDATE orders SET status = %s WHERE order_id = %s
+        """
+        res = self.db.execute_query(update_query, (order.status, order_id))
+        
+        logger.info(f"Updated order {order_id} status to {order.status}")
+        if res is None:
+            raise Exception("Failed to update order status in the database")
+        return {}
+        
             
     def delete_order(self, order_id: int):
-        try:
-            # Check if order exists
-            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
-            if not result:
-                return OrderResponse(
-                    status="Success",
-                    data={},
-                    message=f"Order with ID {order_id} not found or already deleted"
-                )
+        result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id,))
+        if not result:
+            raise NotFoundException(f"Order with ID {order_id} not found")
+        
+        # We need to delete in the correct order due to foreign key constraints
+        # First, find all order items
+        order_items_result = self.db.execute_query("""
+            SELECT order_item_id FROM order_items WHERE order_id = %s
+        """, (order_id,))
+        
+        # Delete from product_order_items first (for each order item)
+        for row in order_items_result:
+            order_item_id = row[0]
+            self.db.execute_query("""
+                DELETE FROM product_order_items WHERE order_item_id = %s
+            """, (order_item_id,))
+            logger.info(f"Deleted product links for order item {order_item_id}")
+        
+        # Then delete from order_items
+        res = self.db.execute_query(OrderQueries.DELETE_ORDER_ITEMS, (order_id,))
+        logger.info(f"Deleted all items for order {order_id}")
+        if res is None:
+            self.db.close_pool()
+            raise Exception("Failed to delete order items from the database")
+        # Finally delete the order
+        res = self.db.execute_query(OrderQueries.DELETE_ORDER, (order_id,))
+        logger.info(f"Deleted order {order_id}")
+        self.db.close_pool()
+        if res is None:
+            raise Exception("Failed to delete order from the database")
+
+        return {}
+
+
+    def update_order_status(self, order_id: int, status: str):
+        # Validate input
+        if order_id <= 0:
+            raise BadRequestException("Invalid order ID")
+        if not status:
+            raise BadRequestException("Status cannot be empty")
+        
+        # Check if order exists and get current status
+        check_result = self.db.execute_query("SELECT status FROM orders WHERE order_id = %s", (order_id,))
+        if not check_result:
+            self.db.close_pool()
+            raise NotFoundException("Order does not exist")
+        
+        current_status = check_result[0][0]
+        
+        # If cancelling an order that was previously active, restore stock quantities
+        if status.lower() == "cancelled" and current_status.lower() != "cancelled":
+            logger.info(f"Cancelling order {order_id}, restoring stock quantities")
             
-            # Start transaction
-            self.db.execute_query("START TRANSACTION;")
-            logger.info(f"Deleting order with ID {order_id}")
+            # Get all order items with their quantities
+            order_items_result = self.db.execute_query(OrderQueries.GET_ORDER_ITEMS_FOR_CANCELLATION, (order_id,))
             
-            # We need to delete in the correct order due to foreign key constraints
-            # First, find all order items
-            order_items_result = self.db.execute_query("""
-                SELECT order_item_id FROM order_items WHERE order_id = %s
-            """, (order_id,))
-            
-            # Delete from product_order_items first (for each order item)
-            for row in order_items_result:
-                order_item_id = row[0]
-                self.db.execute_query("""
-                    DELETE FROM product_order_items WHERE order_item_id = %s
-                """, (order_item_id,))
-                logger.info(f"Deleted product links for order item {order_item_id}")
-            
-            # Then delete from order_items
-            self.db.execute_query(OrderQueries.DELETE_ORDER_ITEMS, (order_id,))
-            logger.info(f"Deleted all items for order {order_id}")
-            
-            # Finally delete the order
-            self.db.execute_query(OrderQueries.DELETE_ORDER, (order_id,))
-            logger.info(f"Deleted order {order_id}")
-            
-            # Commit the transaction
-            self.db.execute_query("COMMIT;")
-            
-            return OrderResponse(
-                status="Success",
-                data={},
-                message=f"Order with ID {order_id} deleted successfully"
-            )
-        except Exception as e:
-            self.db.execute_query("ROLLBACK;")
-            logger.error(f"Error deleting order: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e)) 
+            if order_items_result:
+                # For each product in the order, restore the quantity
+                for row in order_items_result:
+                    product_id = row[0]
+                    quantity = row[1]
+                    
+                    # Call UpdateProductQuantity procedure to add back the quantity
+                    logger.info(f"Restoring {quantity} units for product {product_id}")
+                    restore_result = self.db.execute_query(OrderQueries.UPDATE_PRODUCT_QUANTITY_PROCEDURE, (product_id, quantity))
+                    
+                    if restore_result is None:
+                        logger.error(f"Failed to restore quantity for product {product_id}")
+                        self.db.close_pool()
+                        raise Exception(f"Failed to restore stock quantity for product {product_id}")
+        
+        # Update the order status
+        result = self.db.execute_query(OrderQueries.UPDATE_ORDER_STATUS, (status, order_id))
+        self.db.close_pool()
+        
+        if result is None:
+            raise Exception("Failed to update order status")
+        
+        return f"Order {order_id} status updated to {status}"
+
+    def get_recent_completed_orders(self, user_info):
+        warehouse_id = user_info.get("warehouse_id")
+        role_name = user_info.get("role_name")
+        
+        if not warehouse_id:
+            raise BadRequestException("Warehouse ID is required to retrieve orders")
+        if role_name not in ["admin", "staff"]:
+            raise BadRequestException("Only admin and staff can retrieve orders")
+        
+        # Admin can see all recent completed orders, staff only sees their warehouse
+        if role_name == "admin":
+            result = self.db.execute_query(OrderQueries.GET_RECENT_COMPLETED_ORDERS)
+        else:  # staff
+            result = self.db.execute_query(OrderQueries.GET_RECENT_COMPLETED_ORDERS_BY_WAREHOUSE, (warehouse_id,))
+        
+        self.db.close_pool()
+        
+        if result is None:
+            raise Exception("Failed to retrieve recent completed orders from the database")
+        
+        orders = []
+        for row in result:
+            order_data = {
+                "order_id": row[0],
+                "customer_name": row[1],
+                "total_order_value": float(row[2]) if row[2] else 0.0,
+                "order_date": row[3]
+            }
+            orders.append(order_data)
+        
+        return orders
