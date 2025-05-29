@@ -27,7 +27,7 @@ def get_order(order_id: int, user_info: int = Depends(login_required)):
 @standard_response
 def create_order(order: OrderData, user_info: int = Depends(login_required)):
     controller = OrderController()
-    response = controller.create_order(order.dict(), user_info)
+    response = controller.create_order(order.dict())
     return response
 
 @router.post("/update-order/{order_id}", response_model=StandardResponse)
