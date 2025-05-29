@@ -301,11 +301,35 @@ class OrderController:
         if not status:
             raise BadRequestException("Status cannot be empty")
         
-        # Check if order exists
-        check_result = self.db.execute_query("SELECT COUNT(*) FROM orders WHERE order_id = %s", (order_id,))
-        if not check_result or check_result[0][0] == 0:
+        # Check if order exists and get current status
+        check_result = self.db.execute_query("SELECT status FROM orders WHERE order_id = %s", (order_id,))
+        if not check_result:
             self.db.close_pool()
             raise NotFoundException("Order does not exist")
+        
+        current_status = check_result[0][0]
+        
+        # If cancelling an order that was previously active, restore stock quantities
+        if status.lower() == "cancelled" and current_status.lower() != "cancelled":
+            logger.info(f"Cancelling order {order_id}, restoring stock quantities")
+            
+            # Get all order items with their quantities
+            order_items_result = self.db.execute_query(OrderQueries.GET_ORDER_ITEMS_FOR_CANCELLATION, (order_id,))
+            
+            if order_items_result:
+                # For each product in the order, restore the quantity
+                for row in order_items_result:
+                    product_id = row[0]
+                    quantity = row[1]
+                    
+                    # Call UpdateProductQuantity procedure to add back the quantity
+                    logger.info(f"Restoring {quantity} units for product {product_id}")
+                    restore_result = self.db.execute_query(OrderQueries.UPDATE_PRODUCT_QUANTITY_PROCEDURE, (product_id, quantity))
+                    
+                    if restore_result is None:
+                        logger.error(f"Failed to restore quantity for product {product_id}")
+                        self.db.close_pool()
+                        raise Exception(f"Failed to restore stock quantity for product {product_id}")
         
         # Update the order status
         result = self.db.execute_query(OrderQueries.UPDATE_ORDER_STATUS, (status, order_id))
