@@ -202,36 +202,48 @@ function Dashboard() {
 
         {/* Chart */}
         <div className="py-6">
-          <div className="flex items-end justify-between h-40 space-x-2">
+          <div className="flex items-end space-x-3 h-48">
             {monthlyData.map((item, index) => {
               const height = maxRevenue > 0 ? (item.total_sales / maxRevenue) * 100 : 0;
-              const minHeight = 8; // Minimum 8% height
+              const minHeight = item.total_sales > 0 ? 5 : 2; // Minimum height for visibility
               const finalHeight = Math.max(height, minHeight);
               
               return (
-                <div key={index} className="flex flex-col items-center group flex-1 relative">
+                <div key={index} className="flex flex-col items-center flex-1 group">
                   {/* Tooltip */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute bottom-full mb-2 bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute -translate-y-full mb-2 bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap pointer-events-none z-10">
                     {formatCurrency(item.total_sales)}
                   </div>
                   
-                  {/* Bar Container */}
-                  <div className="w-8 h-32 bg-gray-100 dark:bg-gray-700 rounded-sm flex items-end">
+                  {/* Bar */}
+                  <div className="w-full max-w-12 h-36 flex items-end mb-2">
                     <div 
-                      className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-sm hover:from-blue-600 hover:to-blue-500 transition-colors duration-200 cursor-pointer"
+                      className="w-full bg-gradient-to-t from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 transition-all duration-300 cursor-pointer rounded-t-sm"
                       style={{ 
-                        height: `${finalHeight}%`
+                        height: `${finalHeight}%`,
+                        minHeight: item.total_sales > 0 ? '8px' : '2px'
                       }}
                     />
                   </div>
                   
                   {/* Month label */}
-                  <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                     {formatMonthName(item.month)}
                   </div>
                 </div>
               );
             })}
+          </div>
+          
+          {/* Y-axis reference lines */}
+          <div className="relative mt-4 mb-2">
+            <div className="flex justify-between text-xs text-gray-400">
+              <span>$0</span>
+              <span>{formatCurrency(maxRevenue * 0.25)}</span>
+              <span>{formatCurrency(maxRevenue * 0.5)}</span>
+              <span>{formatCurrency(maxRevenue * 0.75)}</span>
+              <span>{formatCurrency(maxRevenue)}</span>
+            </div>
           </div>
         </div>
 
