@@ -9,3 +9,4 @@ from .GetAllUsersQuery import GetAllUsersQuery
 from .ActivateUserQuery import ActivateUserQuery
 from .DeactivateUserQuery import DeactivateUserQuery
 from .DashboardStatsQuery import DashboardStatsQuery
+from .MonthlySalesQuery import MonthlySalesQuery
