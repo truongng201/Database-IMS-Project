@@ -8,8 +8,57 @@ import {
   CardDescription
 } from "@/components/ui/card";
 import { BarChart, DollarSign, Package, ShoppingCart, Users } from "lucide-react";
+import { useState, useEffect } from "react";
 
 function Dashboard() {
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchRecentOrders = async () => {
+      try {
+        setLoading(true);
+        const access_token = localStorage.getItem("access_token");
+        
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/recent-completed`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${access_token}`,
+            },
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch recent orders");
+        }
+        
+        const data = await response.json();
+        setRecentOrders(data?.data || []);
+      } catch (error) {
+        console.error("Error fetching recent orders:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentOrders();
+  }, []);
+
+  // Format order ID as ORD-0001
+  const formatOrderId = (id) => `ORD-${String(id).padStart(4, '0')}`;
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount || 0);
+  };
   return (
     <div className="space-y-4 p-8 pt-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -70,31 +119,33 @@ function Dashboard() {
         <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Recent Orders</CardTitle>
-            <CardDescription>Latest orders placed</CardDescription>
+            <CardDescription>Latest completed orders</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-8">
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">ORD-7895</p>
-                  <p className="text-sm text-muted-foreground">Customer: Jane Doe</p>
-                </div>
-                <div className="ml-auto font-medium">$125.00</div>
-              </div>
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">ORD-7894</p>
-                  <p className="text-sm text-muted-foreground">Customer: John Smith</p>
-                </div>
-                <div className="ml-auto font-medium">$245.99</div>
-              </div>
-              <div className="flex items-center">
-                <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">ORD-7893</p>
-                  <p className="text-sm text-muted-foreground">Customer: Alice Johnson</p>
-                </div>
-                <div className="ml-auto font-medium">$89.50</div>
-              </div>
+              {loading ? (
+                <div className="text-center text-muted-foreground">Loading...</div>
+              ) : error ? (
+                <div className="text-center text-red-500">Error: {error}</div>
+              ) : recentOrders.length === 0 ? (
+                <div className="text-center text-muted-foreground">No recent orders found</div>
+              ) : (
+                recentOrders.map((order) => (
+                  <div key={order.order_id} className="flex items-center">
+                    <div className="ml-4 space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {formatOrderId(order.order_id)}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Customer: {order.customer_name || "N/A"}
+                      </p>
+                    </div>
+                    <div className="ml-auto font-medium">
+                      {formatCurrency(order.total_order_value)}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

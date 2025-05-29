@@ -339,3 +339,35 @@ class OrderController:
             raise Exception("Failed to update order status")
         
         return f"Order {order_id} status updated to {status}"
+
+    def get_recent_completed_orders(self, user_info):
+        warehouse_id = user_info.get("warehouse_id")
+        role_name = user_info.get("role_name")
+        
+        if not warehouse_id:
+            raise BadRequestException("Warehouse ID is required to retrieve orders")
+        if role_name not in ["admin", "staff"]:
+            raise BadRequestException("Only admin and staff can retrieve orders")
+        
+        # Admin can see all recent completed orders, staff only sees their warehouse
+        if role_name == "admin":
+            result = self.db.execute_query(OrderQueries.GET_RECENT_COMPLETED_ORDERS)
+        else:  # staff
+            result = self.db.execute_query(OrderQueries.GET_RECENT_COMPLETED_ORDERS_BY_WAREHOUSE, (warehouse_id,))
+        
+        self.db.close_pool()
+        
+        if result is None:
+            raise Exception("Failed to retrieve recent completed orders from the database")
+        
+        orders = []
+        for row in result:
+            order_data = {
+                "order_id": row[0],
+                "customer_name": row[1],
+                "total_order_value": float(row[2]) if row[2] else 0.0,
+                "order_date": row[3]
+            }
+            orders.append(order_data)
+        
+        return orders

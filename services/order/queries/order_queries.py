@@ -104,3 +104,34 @@ class OrderQueries:
         JOIN order_items oi ON poi.order_item_id = oi.order_item_id
         WHERE oi.order_id = %s;
     """
+    
+    GET_RECENT_COMPLETED_ORDERS = """
+        SELECT * FROM order_summary_view
+        WHERE order_status = 'completed'
+        ORDER BY order_date DESC, order_id ASC
+        LIMIT 5;
+    """
+    
+    GET_RECENT_COMPLETED_ORDERS_BY_WAREHOUSE = """
+        SELECT 
+            order_id,
+            customer_name,
+            total_order_value,
+            order_date 
+        FROM order_summary_view
+        WHERE warehouse_id = %s AND status = 'completed'
+        ORDER BY order_date DESC, order_id ASC
+        LIMIT 5;
+    """
+    
+    GET_RECENT_COMPLETED_ORDERS = """
+        SELECT 
+            order_id,
+            customer_name,
+            total_order_value,
+            order_date
+        FROM order_summary_view 
+        WHERE status = 'completed'
+        ORDER BY order_date DESC 
+        LIMIT 5;
+    """

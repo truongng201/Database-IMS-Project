@@ -50,3 +50,10 @@ def update_order_status(order_id: int, status: str, user_info: dict = Depends(lo
     controller = OrderController()
     response = controller.update_order_status(order_id, status)
     return response
+
+@router.get("/recent-completed", response_model=StandardResponse)
+@standard_response
+def get_recent_completed_orders(user_info: dict = Depends(login_required)):
+    controller = OrderController()
+    response = controller.get_recent_completed_orders(user_info)
+    return response
