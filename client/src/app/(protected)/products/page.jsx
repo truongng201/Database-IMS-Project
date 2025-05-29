@@ -115,7 +115,9 @@ function ProductsPageContent() {
         );
         if (warehousesRes.ok) {
           const warehousesData = await warehousesRes.json();
-          setWarehouses(warehousesData?.data || []);
+          setWarehouses(Array.isArray(warehousesData?.data) ? warehousesData?.data : []);
+        } else {
+          setWarehouses([]); // Default to empty array if fetch fails
         }
 
         // Fetch suppliers

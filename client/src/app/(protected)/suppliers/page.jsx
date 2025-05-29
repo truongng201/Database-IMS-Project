@@ -28,26 +28,25 @@ function SuppliersPageContent() {
         const searchParam = searchQuery ? `?search=${encodeURIComponent(searchQuery)}` : '';
         
         // Fetch total suppliers
-        const totalRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/supplier/count-suppliers`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `${access_token}`,
-            },
-          }
-        );
-        if (!totalRes.ok) {
-          const errorData = await totalRes.json();
-          setError(errorData?.message || "Failed to fetch total suppliers");
-          setShowAlert(true);
-          setTimeout(() => setShowAlert(false), 3000);
-          return;
-        }
-        const totalData = await totalRes.json();
-        const total = totalData?.data || 0;
-        setTotalSuppliers(total);
+        // const totalRes = await fetch(
+        //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/supplier/count-suppliers`,
+        //   {
+        //     method: "GET",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //       Authorization: `${access_token}`,
+        //     },
+        //   }
+        // );
+        // if (!totalRes.ok) {
+        //   const errorData = await totalRes.json();
+        //   setError(errorData?.message || "Failed to fetch total suppliers");
+        //   setShowAlert(true);
+        //   setTimeout(() => setShowAlert(false), 3000);
+        //   return;
+        // }
+        // const totalData = await totalRes.json();
+        // const total = totalData?.data || 0;
 
         // Fetch all suppliers with search parameter
         const suppliersRes = await fetch(
@@ -69,6 +68,7 @@ function SuppliersPageContent() {
         }
         const suppliersData = await suppliersRes.json();
         setSuppliers(suppliersData?.data || []);
+        setTotalSuppliers(suppliersData?.data?.length || 0);
       } catch (error) {
         setError("Error fetching data");
         setShowAlert(true);

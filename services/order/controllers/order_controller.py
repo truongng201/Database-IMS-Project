@@ -48,7 +48,7 @@ class OrderController:
         logger.info(f"Formatted order {order_data['order_id']} with {len(order_data['items'])} items")
         return order_data
 
-    def get_all_orders(self, user_info):
+    def get_all_orders(self, user_info, search=None):
         warehouse_id = user_info.get("warehouse_id")
         role_name = user_info.get("role_name")
         if not warehouse_id:
@@ -56,8 +56,19 @@ class OrderController:
         if role_name not in ["admin", "staff"]:
             raise BadRequestException("Only admin and staff can retrieve orders")
         
+        # Handle search parameter - extract number from ORD-1000 format
+        search_param = None
+        if search:
+            if search.startswith("ORD-"):
+                search_param = f"%{search[4:]}%"  # Extract number part
+            else:
+                search_param = f"%{search}%"
+        
         if role_name == "admin":
-            result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS)
+            if search_param:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_WITH_SEARCH, (search_param, search_param))
+            else:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS)
             print(result)
             self.db.close_pool()
             if result is None:
@@ -86,7 +97,10 @@ class OrderController:
             
         
         if role_name == "staff":
-            result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_BY_WAREHOUSE, (warehouse_id,))
+            if search_param:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_BY_WAREHOUSE_WITH_SEARCH, (warehouse_id, search_param, search_param))
+            else:
+                result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_BY_WAREHOUSE, (warehouse_id,))
             self.db.close_pool()
             if result is None:
                 raise Exception("Failed to retrieve orders from the database")
@@ -126,7 +140,7 @@ class OrderController:
         
         order_date = {}
         if role_name == "staff":
-            result = self.db.execute_query(OrderQueries.GET_ORDER_BY_ID, (order_id, warehouse_id))
+            result = self.db.execute_query(OrderQueries.GET_ORDER_DETAIL_BY_WAREHOUSE, (order_id, warehouse_id))
             logger.info(f"Got result from database: {bool(result)}")
             if not result:
                 raise NotFoundException(f"Cannot found order with ID {order_id}")
@@ -138,7 +152,9 @@ class OrderController:
                 "customer_name": result[0][4],
                 "customer_email": result[0][5],
                 "customer_phone": result[0][6],
-                "items": []
+                "items": [],
+                "total_items": 0,
+                "total_price": 0
             }
             for row in result:
                 item = {
@@ -147,9 +163,11 @@ class OrderController:
                     "product_name": row[9],
                     "product_price": row[10],
                     "quantity_ordered": row[11],
-                    "total_price": row[12]
+                    "price": row[12]
                 }
                 order_data["items"].append(item)
+                order_data["total_items"] += 1
+                order_data["total_price"] += item["price"]
 
         if role_name == "admin":
             result = self.db.execute_query(OrderQueries.GET_ORDER_DETAIL, (order_id,))
@@ -354,4 +372,28 @@ class OrderController:
         except Exception as e:
             self.db.execute_query("ROLLBACK;")
             logger.error(f"Error deleting order: {str(e)}")
-            raise HTTPException(status_code=500, detail=str(e)) 
+            raise HTTPException(status_code=500, detail=str(e))
+
+    def update_order_status(self, order_id: int, status: str):
+        
+        # Validate input
+        if order_id <= 0:
+            raise BadRequestException("Invalid order ID")
+        if not status:
+            raise BadRequestException("Status cannot be empty")
+        
+        # Check if order exists
+        check_result = self.db.execute_query("SELECT COUNT(*) FROM orders WHERE order_id = %s", (order_id,))
+        if not check_result or check_result[0][0] == 0:
+            self.db.close_pool()
+            raise NotFoundException("Order does not exist")
+        
+        # Update the order status
+        result = self.db.execute_query(OrderQueries.UPDATE_ORDER_STATUS, (status, order_id))
+        self.db.close_pool()
+        
+        if result is None:
+            raise Exception("Failed to update order status")
+        
+        return f"Order {order_id} status updated to {status}"
+        

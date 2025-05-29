@@ -55,4 +55,28 @@ class OrderQueries:
     DELETE_ORDER_ITEMS = """
         DELETE FROM order_items
         WHERE order_id = %s;
-    """ 
+    """
+
+    UPDATE_ORDER_STATUS = """
+        UPDATE orders
+        SET status = %s
+        WHERE order_id = %s;
+    """
+
+    SEARCH_ORDERS = """
+        SELECT * FROM orders
+        WHERE CAST(order_id AS CHAR) LIKE %s OR customer_name LIKE %s
+        ORDER BY order_date DESC;
+    """
+    
+    GET_ALL_ORDERS_WITH_SEARCH = """
+        SELECT * FROM order_summary_view
+        WHERE CAST(order_id AS CHAR) LIKE %s OR customer_name LIKE %s
+        ORDER BY order_date DESC, order_id ASC;
+    """
+    
+    GET_ALL_ORDERS_BY_WAREHOUSE_WITH_SEARCH = """
+        SELECT * FROM order_summary_view
+        WHERE warehouse_id = %s AND (CAST(order_id AS CHAR) LIKE %s OR customer_name LIKE %s)
+        ORDER BY order_date DESC, order_id ASC;
+    """

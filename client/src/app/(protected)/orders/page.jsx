@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { File, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { OrdersTable } from './orders-table';
 import withAuth from '@/hooks/withAuth';
 
-function OrdersPage() {
+function OrdersPageContent() {
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams.get('search') || "";
   const [orders, setOrders] = useState([]);
   const [error, setError] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
@@ -24,8 +27,12 @@ function OrdersPage() {
     const fetchOrders = async () => {
       try {
         const access_token = localStorage.getItem("access_token");
+        
+        // Build URL with search parameter if it exists
+        const searchParam = searchQuery ? `search=${encodeURIComponent(searchQuery)}` : '';
+        
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/get-all-orders`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/get-all-orders${searchParam ? `?${searchParam}` : ''}`,
           {
             method: "GET",
             headers: {
@@ -53,7 +60,7 @@ function OrdersPage() {
     };
     
     fetchOrders();
-  }, []);
+  }, [searchQuery]); // Re-fetch when search query changes
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -71,16 +78,51 @@ function OrdersPage() {
   const paginatedCompletedOrders = completedOrders.slice(offsets.completed, offsets.completed + limit);
   const paginatedCancelledOrders = cancelledOrders.slice(offsets.cancelled, offsets.cancelled + limit);
 
-  // Debug logging
-  console.log("Offsets:", offsets);
-  console.log("Active tab:", activeTab);
-  console.log("All orders length:", allOrders.length);
-  console.log("Pending orders length:", pendingOrders.length);
-  console.log("Completed orders length:", completedOrders.length);
-  console.log("Cancelled orders length:", cancelledOrders.length);
+  // Function to refresh orders after status update
+  const handleStatusUpdate = async () => {
+    // Reset offsets to first page
+    setOffsets({
+      all: 0,
+      pending: 0,
+      completed: 0,
+      cancelled: 0
+    });
+    
+    // Re-fetch orders
+    try {
+      const access_token = localStorage.getItem("access_token");
+      const searchParam = searchQuery ? `search=${encodeURIComponent(searchQuery)}` : '';
+      
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/get-all-orders${searchParam ? `?${searchParam}` : ''}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${access_token}`,
+          },
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data?.data || []);
+      }
+    } catch (error) {
+      console.error("Error refreshing orders:", error);
+    }
+  };
 
   return (
-    <Tabs defaultValue="all" onValueChange={handleTabChange}>
+    <div className="flex flex-col space-y-4">
+      
+      {searchQuery && (
+        <div className="text-sm text-muted-foreground">
+          Search results for: <strong>"{searchQuery}"</strong> ({orders.length} found)
+        </div>
+      )}
+      
+      <Tabs defaultValue="all" onValueChange={handleTabChange}>
       {showAlert && (
         <div className="fixed top-4 right-4 z-50 p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 shadow-lg" role="alert">
           {error}
@@ -117,6 +159,9 @@ function OrdersPage() {
           setOffset={(newOffset) => setOffsets(prev => ({ ...prev, all: newOffset }))}
           totalOrders={allOrders.length}
           limit={limit}
+          setError={setError}
+          setShowAlert={setShowAlert}
+          onStatusUpdate={handleStatusUpdate}
         />
       </TabsContent>
       <TabsContent value="pending">
@@ -126,6 +171,9 @@ function OrdersPage() {
           setOffset={(newOffset) => setOffsets(prev => ({ ...prev, pending: newOffset }))}
           totalOrders={pendingOrders.length}
           limit={limit}
+          setError={setError}
+          setShowAlert={setShowAlert}
+          onStatusUpdate={handleStatusUpdate}
         />
       </TabsContent>
       <TabsContent value="completed">
@@ -135,6 +183,9 @@ function OrdersPage() {
           setOffset={(newOffset) => setOffsets(prev => ({ ...prev, completed: newOffset }))}
           totalOrders={completedOrders.length}
           limit={limit}
+          setError={setError}
+          setShowAlert={setShowAlert}
+          onStatusUpdate={handleStatusUpdate}
         />
       </TabsContent>
       <TabsContent value="cancelled">
@@ -144,10 +195,14 @@ function OrdersPage() {
           setOffset={(newOffset) => setOffsets(prev => ({ ...prev, cancelled: newOffset }))}
           totalOrders={cancelledOrders.length}
           limit={limit}
+          setError={setError}
+          setShowAlert={setShowAlert}
+          onStatusUpdate={handleStatusUpdate}
         />
       </TabsContent>
     </Tabs>
+    </div>
   );
 }
 
-export default withAuth(OrdersPage);
+export default withAuth(OrdersPageContent);

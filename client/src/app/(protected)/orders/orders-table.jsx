@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export function OrdersTable({ orders, offset, setOffset, totalOrders, limit = 5 }) {
+export function OrdersTable({ orders, offset, setOffset, totalOrders, limit = 5, setError, setShowAlert, onStatusUpdate }) {
   let router = useRouter();
 
   function prevPage(e) {
@@ -63,6 +63,9 @@ export function OrdersTable({ orders, offset, setOffset, totalOrders, limit = 5 
               <Order
                 key={order.order_id}
                 order={order}
+                setError={setError}
+                setShowAlert={setShowAlert}
+                onStatusUpdate={onStatusUpdate}
               />
             ))}
             {orders.length === 0 && (

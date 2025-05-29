@@ -12,12 +12,49 @@ import {
 import { formatCurrency } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 
-export function Order({ order, onClick }) {
+export function Order({ order, onClick, setError, setShowAlert, onStatusUpdate }) {
   const router = useRouter()
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-red-100 text-red-800'
+  };
+
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      const access_token = localStorage.getItem("access_token");
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/order/update-order-status?order_id=${orderId}&status=${status}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${access_token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData?.message || "Failed to update order status");
+        setShowAlert(true);
+        setTimeout(() => setShowAlert(false), 3000);
+        return;
+      }
+
+      setError(`Order status updated to ${status} successfully!`);
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+      
+      // Call parent component to refresh data
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+    } catch (error) {
+      setError("Error updating order status");
+      setShowAlert(true);
+      setTimeout(() => setShowAlert(false), 3000);
+    }
   };
 
   // Format order ID as O0001
@@ -99,8 +136,24 @@ export function Order({ order, onClick }) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => router.push(`/orders/${order.order_id}`)}>View details</DropdownMenuItem>
-            <DropdownMenuItem>Update status</DropdownMenuItem>
-            <DropdownMenuItem>Cancel order</DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={(e) => {
+                e.stopPropagation();
+                updateOrderStatus(order.order_id, 'completed');
+              }}
+              disabled={order.order_status === 'completed'}
+            >
+              Complete order
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={(e) => {
+                e.stopPropagation();
+                updateOrderStatus(order.order_id, 'cancelled');
+              }}
+              disabled={order.order_status === 'cancelled'}
+            >
+              Cancel order
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
