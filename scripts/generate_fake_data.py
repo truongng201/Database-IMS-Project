@@ -1,7 +1,48 @@
 from faker import Faker
 import random
+from datetime import datetime, timedelta
 
 faker = Faker()
+
+def generate_realistic_date(months_back=6, growth_pattern=True):
+    """Generate a realistic date within the specified time range with optional growth pattern"""
+    now = datetime.now()
+    
+    # Define time range
+    days_back = months_back * 30  # Approximate days per month
+    earliest_date = now - timedelta(days=days_back)
+    
+    if growth_pattern:
+        # Create more realistic business pattern with some variability
+        # Not pure growth - some periods may have declines or flat periods
+        days_ago = random.choices(
+            range(0, days_back + 1),
+            weights=[
+                # Create a more realistic business pattern
+                # Recent months get higher weight, but with some randomness
+                max(1, int(8 + (days_back - day) / 8 + random.uniform(-2, 3))) 
+                for day in range(0, days_back + 1)
+            ]
+        )[0]
+    else:
+        # Uniform distribution
+        days_ago = random.randint(0, days_back)
+    
+    generated_date = now - timedelta(days=days_ago)
+    
+    # Add some random hours/minutes to make it more realistic
+    generated_date = generated_date.replace(
+        hour=random.randint(8, 22),
+        minute=random.randint(0, 59),
+        second=random.randint(0, 59),
+        microsecond=0
+    )
+    
+    return generated_date.strftime('%Y-%m-%d %H:%M:%S')
+
+def generate_order_date():
+    """Generate a realistic order date within the last 6 months with growth pattern"""
+    return generate_realistic_date(months_back=6, growth_pattern=True)
 
 # Constants
 NUM_SUPPLIERS = 100
@@ -30,7 +71,9 @@ sql_statements = []
 for item in categories:
     name = item[0].replace("'", "''")
     description = item[1].replace("'", "''")
-    sql_statements.append(f"INSERT INTO categories (name, description) VALUES ('{name}', '{description}');")
+    created_time = generate_realistic_date(months_back=12, growth_pattern=False)  # Categories created over 12 months, uniform distribution
+    updated_time = created_time  # Initially same as created_time
+    sql_statements.append(f"INSERT INTO categories (name, description, created_time, updated_time) VALUES ('{name}', '{description}', '{created_time}', '{updated_time}');")
 
 # Suppliers
 for _ in range(NUM_SUPPLIERS):
@@ -38,19 +81,24 @@ for _ in range(NUM_SUPPLIERS):
     contact_name = faker.name().replace("'", "''")
     contact_email = faker.company_email()
     phone = faker.phone_number()
-    sql_statements.append(f"INSERT INTO suppliers (name, contact_name, contact_email, phone) "
-                          f"VALUES ('{name}', '{contact_name}', '{contact_email}', '{phone}');")
+    created_time = generate_realistic_date(months_back=18, growth_pattern=True)  # Suppliers added over 18 months with growth
+    updated_time = created_time  # Initially same as created_time
+    sql_statements.append(f"INSERT INTO suppliers (name, contact_name, contact_email, phone, created_time, updated_time) "
+                          f"VALUES ('{name}', '{contact_name}', '{contact_email}', '{phone}', '{created_time}', '{updated_time}');")
 
 # Warehouses
 for _ in range(NUM_WAREHOUSES):
     name = faker.city().replace("'", "''")
     address = faker.street_address().replace("'", "''")
-    sql_statements.append(f"INSERT INTO warehouses (name, address) "
-                          f"VALUES ('{name}', '{address}');")
+    created_time = generate_realistic_date(months_back=24, growth_pattern=False)  # Warehouses established over 24 months, uniform
+    updated_time = created_time  # Initially same as created_time
+    sql_statements.append(f"INSERT INTO warehouses (name, address, created_time, updated_time) "
+                          f"VALUES ('{name}', '{address}', '{created_time}', '{updated_time}');")
 
 # Users
-sql_statements.append(f"INSERT INTO users (username, email, password_hash, role_name, warehouse_id, is_active, image_url) "
-                      f"VALUES ('admin', 'admin@admin.com', '$2b$12$MhPoat8o/LgpoL2spnBagetd5YPqa1HwP6dzRpGg4O1PQ8mwMLQSy', 'admin', 1, TRUE, 'https://api.dicebear.com/9.x/identicon/svg?seed=admin');")
+admin_created_time = generate_realistic_date(months_back=24, growth_pattern=False)  # Admin user created early
+sql_statements.append(f"INSERT INTO users (username, email, password_hash, role_name, warehouse_id, is_active, image_url, created_time, updated_time) "
+                      f"VALUES ('admin', 'admin@admin.com', '$2b$12$MhPoat8o/LgpoL2spnBagetd5YPqa1HwP6dzRpGg4O1PQ8mwMLQSy', 'admin', 1, TRUE, 'https://api.dicebear.com/9.x/identicon/svg?seed=admin', '{admin_created_time}', '{admin_created_time}');")
 
 # Customers
 for _ in range(NUM_CUSTOMERS):
@@ -58,8 +106,10 @@ for _ in range(NUM_CUSTOMERS):
     email = faker.email()
     phone = faker.phone_number()
     address = faker.address().replace('\n', ', ').replace("'", "''")
-    sql_statements.append(f"INSERT INTO customers (name, email, phone, address) "
-                          f"VALUES ('{name}', '{email}', '{phone}', '{address}');")
+    created_time = generate_realistic_date(months_back=8, growth_pattern=True)  # Customer acquisition over 8 months with growth
+    updated_time = created_time  # Initially same as created_time
+    sql_statements.append(f"INSERT INTO customers (name, email, phone, address, created_time, updated_time) "
+                          f"VALUES ('{name}', '{email}', '{phone}', '{address}', '{created_time}', '{updated_time}');")
 
 # Products
 product_warehouse_map = {}  # Maps product_id to warehouse_id
@@ -75,20 +125,25 @@ for product_id in range(1, NUM_PRODUCTS + 1):
     warehouse_product_counts[warehouse_id] += 1
     category_id = random.randint(1, len(categories))
     image_url = f"https://api.dicebear.com/9.x/identicon/svg?seed={name}"
+    created_time = generate_realistic_date(months_back=10, growth_pattern=True)  # Product creation over 10 months with growth
+    updated_time = created_time  # Initially same as created_time
     product_warehouse_map[product_id] = warehouse_id
-    sql_statements.append(f"INSERT INTO products (name, description, price, quantity, supplier_id, warehouse_id, category_id, image_url) "
-                          f"VALUES ('{name}', '{description}', {price}, {quantity}, {supplier_id}, {warehouse_id}, {category_id}, '{image_url}');")
+    sql_statements.append(f"INSERT INTO products (name, description, price, quantity, supplier_id, warehouse_id, category_id, image_url, created_time, updated_time) "
+                          f"VALUES ('{name}', '{description}', {price}, {quantity}, {supplier_id}, {warehouse_id}, {category_id}, '{image_url}', '{created_time}', '{updated_time}');")
 
 # Orders
 order_warehouse_map = {}  # Maps order_id to warehouse_id (in memory only)
 for order_id in range(1, NUM_ORDERS + 1):
     customer_id = random.randint(1, NUM_CUSTOMERS)
     status = random.choice(['pending', 'completed', 'cancelled'])
+    order_date = generate_order_date()
+    created_time = order_date  # Order created same time as order date
+    updated_time = order_date  # Initially same as created_time
     # Assign a random warehouse to each order (not stored in DB)
     warehouse_id = random.randint(1, NUM_WAREHOUSES)
     order_warehouse_map[order_id] = warehouse_id
-    sql_statements.append(f"INSERT INTO orders (customer_id, status) "
-                          f"VALUES ({customer_id}, '{status}');")
+    sql_statements.append(f"INSERT INTO orders (customer_id, order_date, status, created_time, updated_time) "
+                          f"VALUES ({customer_id}, '{order_date}', '{status}', '{created_time}', '{updated_time}');")
 
 # Order Items
 order_item_to_order = {}  # Maps order_item_id to order_id
