@@ -54,16 +54,6 @@ class SupplierController:
             self.db.close_pool()
             suppliers = []
             for row in result:
-                # Handle potential invalid datetime values
-                earliest_product_created = row[10]
-                latest_product_updated = row[11]
-                
-                # Check for invalid datetime values and convert to None
-                if earliest_product_created and str(earliest_product_created).startswith('0000-00-00'):
-                    earliest_product_created = None
-                if latest_product_updated and str(latest_product_updated).startswith('0000-00-00'):
-                    latest_product_updated = None
-                
                 supplier = {
                     "supplier_id": row[2],
                     "supplier_name": row[3],
@@ -73,8 +63,8 @@ class SupplierController:
                     "total_products": row[7],
                     "total_product_quantity": row[8],
                     "avg_product_price": row[9],
-                    "earliest_product_created": earliest_product_created,
-                    "latest_product_updated": latest_product_updated,
+                    "earliest_product_created": self._safe_datetime_value(row[10]),
+                    "latest_product_updated": self._safe_datetime_value(row[11]),
                     "supplier_created_time": row[12],
                     "supplier_updated_time": row[13]
                 }
@@ -94,16 +84,6 @@ class SupplierController:
             self.db.close_pool()
             suppliers = []
             for row in result:
-                # Handle potential invalid datetime values
-                earliest_product_created = row[10]
-                latest_product_updated = row[11]
-                
-                # Check for invalid datetime values and convert to None
-                if earliest_product_created and str(earliest_product_created).startswith('0000-00-00'):
-                    earliest_product_created = None
-                if latest_product_updated and str(latest_product_updated).startswith('0000-00-00'):
-                    latest_product_updated = None
-                
                 supplier = {
                     "supplier_id": row[2],
                     "supplier_name": row[3],
@@ -113,8 +93,8 @@ class SupplierController:
                     "total_products": row[7],
                     "total_product_quantity": row[8],
                     "avg_product_price": row[9],
-                    "earliest_product_created": earliest_product_created,
-                    "latest_product_updated": latest_product_updated,
+                    "earliest_product_created": self._safe_datetime_value(row[10]),
+                    "latest_product_updated": self._safe_datetime_value(row[11]),
                     "supplier_created_time": row[12],
                     "supplier_updated_time": row[13]
                 }
