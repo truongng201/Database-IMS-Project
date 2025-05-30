@@ -170,3 +170,31 @@ Make sure you have the following installed:
 ## 📜 Architecture
 
 ![Architecture](./docs/architecture.png)
+
+## ⚠️ Project Closure & Server Shutdown Notice
+
+After careful consideration, we have decided to shut down the production server for this project due to infrastructure costs.
+
+- **Hosting Provider:** DigitalOcean  
+- **Configuration:** 4 vCPUs (AMD), 8GB RAM, 60GB SSD  
+- **Monthly Cost:** $56  
+- **Status:** All application code and infrastructure setup files (including deployment YAMLs) have been preserved and are available in this repository for reference and reuse.
+
+---
+
+### 🛠 Project Recap
+
+What began as an ambitious challenge was brought to completion in just **4–5 days** by a dedicated and focused team. Through rapid iteration, clear division of responsibilities, and deep technical engagement, we built and deployed a full-stack application from the ground up.
+
+AI tools played a supportive role, especially in accelerating code generation and structuring documentation. However, it's important to acknowledge that AI did not replace our thinking — it complemented it. All initial scaffolding, logic design, and architectural decisions came from us. The AI followed, not led.
+
+---
+
+### 💡 Reflection
+
+This experience serves as a powerful reminder:
+
+> **AI is a tool, not a mind.**  
+> It can assist, suggest, and even surprise — but the spark of **creativity**, the ability to **think critically**, and the power to **imagine possibilities** still reside in human hands.
+
+As developers, we are entering a new era. Tools are evolving rapidly. But so must we — in our curiosity, our understanding of systems, and our willingness to go deeper than just writing code.
