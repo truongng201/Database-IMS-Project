@@ -34,6 +34,7 @@ jobs:
   run_on_droplet:
     needs: [check_folder_changed]
     name: Run database init scripts on Droplet
+    if: needs.check_folder_changed.outputs.is_changed == 'true'
     runs-on: ubuntu-latest
 
     steps:
