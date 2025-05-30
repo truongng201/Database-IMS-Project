@@ -73,32 +73,34 @@ export function OrderItemTable({ items, offset, setOffset, totalItems, limit = 5
         <CardTitle>Order Items</CardTitle>
         <CardDescription>
           {order && (
-            <div className="flex flex-wrap gap-6 items-center bg-muted/60 rounded-md p-4 mb-4 border border-muted-foreground/10">
-              <div>
-                <span className="font-semibold text-muted-foreground">Order ID:</span> {formatOrderId(order.order_id)}
+            <>
+              <div className="flex flex-wrap gap-6 items-center bg-muted/60 rounded-md p-4 mb-4 border border-muted-foreground/10">
+                <span>
+                  <span className="font-semibold text-muted-foreground">Order ID:</span> {formatOrderId(order.order_id)}
+                </span>
+                <span>
+                  <span className="font-semibold text-muted-foreground">Customer:</span> {order.customer_name}
+                </span>
+                <span>
+                  <span className="font-semibold text-muted-foreground">Email:</span> {order.customer_email}
+                </span>
+                <span>
+                  <span className="font-semibold text-muted-foreground">Order Date:</span> {formatDate(order.order_date)}
+                </span>
+                <span>
+                  <span className="font-semibold text-muted-foreground">Status:</span> 
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${statusColors[order.order_status] || 'bg-gray-100 text-gray-800'}`}>
+                    {order.order_status || "unknown"}
+                  </span>
+                </span>
+                <span>
+                  <span className="font-semibold text-muted-foreground">Total Value:</span> {formatCurrencyValue(order.total_price)}
+                </span>
+                <span>
+                  <span className="font-semibold text-muted-foreground">Total Items:</span> {parseNumericValue(order.total_items)}
+                </span>
               </div>
-              <div>
-                <span className="font-semibold text-muted-foreground">Customer:</span> {order.customer_name}
-              </div>
-              <div>
-                <span className="font-semibold text-muted-foreground">Email:</span> {order.customer_email}
-              </div>
-              <div>
-                <span className="font-semibold text-muted-foreground">Order Date:</span> {formatDate(order.order_date)}
-              </div>
-              <div>
-                <span className="font-semibold text-muted-foreground">Status:</span> 
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${statusColors[order.order_status] || 'bg-gray-100 text-gray-800'}`}>
-                  {order.order_status || "unknown"}
-                </div>
-              </div>
-              <div>
-                <span className="font-semibold text-muted-foreground">Total Value:</span> {formatCurrencyValue(order.total_price)}
-              </div>
-              <div>
-                <span className="font-semibold text-muted-foreground">Total Items:</span> {parseNumericValue(order.total_items)}
-              </div>
-            </div>
+            </>
           )}
           All items in this order.
         </CardDescription>

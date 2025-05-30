@@ -43,7 +43,6 @@ export function User() {
 
     if (!res.ok) {
       const errorData = await res.json();
-      console.log(errorData);
       setError(errorData.message);
       setShowAlert(true);
 

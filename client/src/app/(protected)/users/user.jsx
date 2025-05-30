@@ -69,7 +69,6 @@ export function User({ user, warehouses, setError, setShowAlert }) {
         setTimeout(() => {
           setShowAlert(false);
         }, 3000);
-        console.log("Failed to activate account:", errorData);
         return;
       }
       setIsActive(1);
@@ -79,7 +78,6 @@ export function User({ user, warehouses, setError, setShowAlert }) {
       setTimeout(() => {
         setShowAlert(false);
       }, 3000);
-      console.log("Error activating account:", error);
     }
   };
 
@@ -105,7 +103,6 @@ export function User({ user, warehouses, setError, setShowAlert }) {
         setTimeout(() => {
           setShowAlert(false);
         }, 3000);
-        console.log("Failed to deactivate account:", errorData);
         return;
       }
 
@@ -116,7 +113,6 @@ export function User({ user, warehouses, setError, setShowAlert }) {
       setTimeout(() => {
         setShowAlert(false);
       }, 3000);
-      console.log("Error deactivating account:", error);
     }
   };
   function formatUserID(id) {

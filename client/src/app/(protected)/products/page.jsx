@@ -22,7 +22,6 @@ function ProductsPageContent() {
   const [suppliers, setSuppliers] = useState([]);
   const [user, setUser] = useState(null);
   const limit = 100;
-  console.log(categories)
   useEffect(() => {
     // Get user info from localStorage
     const userData = localStorage.getItem("user");

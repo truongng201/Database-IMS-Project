@@ -69,7 +69,6 @@ class OrderController:
                 result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS_WITH_SEARCH, (search_param, search_param))
             else:
                 result = self.db.execute_query(OrderQueries.GET_ALL_ORDERS)
-            print(result)
             self.db.close_pool()
             if result is None:
                 raise Exception("Failed to retrieve orders from the database")

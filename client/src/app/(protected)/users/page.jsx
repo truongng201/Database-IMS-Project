@@ -29,7 +29,6 @@ function UsersPage() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.log("Failed to fetch users:", errorData);
           setError("Failed to fetch users");
           setShowAlert(true);
           setTimeout(() => {
@@ -41,7 +40,6 @@ function UsersPage() {
         const data = await response.json();
         setUsers(data?.data || []);
       } catch (error) {
-        console.log("Error fetching users:", error);
         setError("Error fetching users");
         setShowAlert(true);
         setTimeout(() => {
@@ -67,7 +65,6 @@ function UsersPage() {
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.log("Failed to fetch warehouses:", errorData);
           setError("Failed to fetch warehouses");
           setShowAlert(true);
           setTimeout(() => {
@@ -79,7 +76,6 @@ function UsersPage() {
         const data = await response.json();
         setWarehouses(data?.data || []);
       } catch (error) {
-        console.log("Error fetching warehouses:", error);
         setError("Error fetching warehouses");
         setShowAlert(true);
         setTimeout(() => {

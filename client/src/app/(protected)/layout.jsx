@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import {
   Home,
@@ -191,7 +192,6 @@ function DashboardBreadcrumb() {
   let splitted_path = path.split("/")
     .filter((segment) => segment !== "")
     .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1));
-  console.log("Path segments:", splitted_path);
 
   if (splitted_path.length === 0) {
     return (
@@ -227,14 +227,14 @@ function DashboardBreadcrumb() {
             label = `${splitted_path[idx - 1].charAt(0).toUpperCase() + splitted_path[idx - 1].slice(1).toLowerCase().slice(0, -1)} ${segment}`;
           }
           return (
-            <>
-              <BreadcrumbSeparator key={`sep-${idx}`} />
-              <BreadcrumbItem key={href}>
+            <React.Fragment key={`breadcrumb-${idx}`}>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link href={href}>{label}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
-            </>
+            </React.Fragment>
           );
         })}
       </BreadcrumbList>
