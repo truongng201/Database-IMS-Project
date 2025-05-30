@@ -8,6 +8,23 @@ class SupplierController:
     def __init__(self):
         self.db = Database()
 
+    def _safe_datetime_value(self, datetime_value):
+        """
+        Safely handle datetime values that might be invalid (e.g., '0000-00-00 00:00:00')
+        Returns None for invalid datetime values
+        """
+        if datetime_value is None:
+            return None
+        
+        # Convert to string to check for invalid datetime pattern
+        datetime_str = str(datetime_value)
+        
+        # Check for MySQL's invalid datetime values
+        if datetime_str.startswith('0000-00-00') or datetime_str == '0000-00-00 00:00:00':
+            return None
+            
+        return datetime_value
+
     def get_all_suppliers(self, user_info: dict, search: str = None) -> list:
         # Validate user_info is a dict
         if not isinstance(user_info, dict):
@@ -37,6 +54,16 @@ class SupplierController:
             self.db.close_pool()
             suppliers = []
             for row in result:
+                # Handle potential invalid datetime values
+                earliest_product_created = row[10]
+                latest_product_updated = row[11]
+                
+                # Check for invalid datetime values and convert to None
+                if earliest_product_created and str(earliest_product_created).startswith('0000-00-00'):
+                    earliest_product_created = None
+                if latest_product_updated and str(latest_product_updated).startswith('0000-00-00'):
+                    latest_product_updated = None
+                
                 supplier = {
                     "supplier_id": row[2],
                     "supplier_name": row[3],
@@ -46,8 +73,8 @@ class SupplierController:
                     "total_products": row[7],
                     "total_product_quantity": row[8],
                     "avg_product_price": row[9],
-                    "earliest_product_created": row[10],
-                    "latest_product_updated": row[11],
+                    "earliest_product_created": earliest_product_created,
+                    "latest_product_updated": latest_product_updated,
                     "supplier_created_time": row[12],
                     "supplier_updated_time": row[13]
                 }
@@ -67,6 +94,16 @@ class SupplierController:
             self.db.close_pool()
             suppliers = []
             for row in result:
+                # Handle potential invalid datetime values
+                earliest_product_created = row[10]
+                latest_product_updated = row[11]
+                
+                # Check for invalid datetime values and convert to None
+                if earliest_product_created and str(earliest_product_created).startswith('0000-00-00'):
+                    earliest_product_created = None
+                if latest_product_updated and str(latest_product_updated).startswith('0000-00-00'):
+                    latest_product_updated = None
+                
                 supplier = {
                     "supplier_id": row[2],
                     "supplier_name": row[3],
@@ -76,8 +113,8 @@ class SupplierController:
                     "total_products": row[7],
                     "total_product_quantity": row[8],
                     "avg_product_price": row[9],
-                    "earliest_product_created": row[10],
-                    "latest_product_updated": row[11],
+                    "earliest_product_created": earliest_product_created,
+                    "latest_product_updated": latest_product_updated,
                     "supplier_created_time": row[12],
                     "supplier_updated_time": row[13]
                 }
