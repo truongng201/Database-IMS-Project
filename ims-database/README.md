@@ -2,7 +2,7 @@
 
 ## 🧱 Database Schema
 
-![Database Schema](./docs/ims-schema.png)
+![Database Schema](../docs/ims-schema.png)
 
 This document outlines the database schema for an Inventory Management System, designed to manage products, orders, users, and related entities. The schema is implemented in SQL and includes tables with their respective fields and purposes.
 
