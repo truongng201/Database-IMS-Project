@@ -10,7 +10,7 @@ jobs:
     name: Check if database folder changed
     runs-on: ubuntu-latest
     outputs:
-      is_changed: ${{ steps.changes.outputs.database }}
+      is_changed: ${{ steps.changes.outputs.service }}
 
     steps:
       - uses: actions/checkout@v3
@@ -18,17 +18,17 @@ jobs:
         id: changes
         with:
           filters: |
-            database:
+            service:
               - 'ims-database/init-scripts/**'
 
       # run only if "database" folder was changed
       - name: "database is changed"
-        if: steps.changes.outputs.database == 'true'
+        if: steps.changes.outputs.service == 'true'
         run: echo "Folder init scripts in databases has changed"
 
       # run only if "database" folder was not changed
       - name: "database is not changed"
-        if: steps.changes.outputs.database == 'false'
+        if: steps.changes.outputs.service == 'false'
         run: echo "Folder init scripts in databases has not changed"
 
   run_on_droplet:
